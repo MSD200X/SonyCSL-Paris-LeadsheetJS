@@ -1,4 +1,4 @@
-define(['jquery', 'pubsub', 'modules/Audio/src/AudioContext'], function($, pubsub, AudioContext) {
+define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio/src/BufferLoader'], function($, _, AudioContext, BufferLoader) {
 	/**
 	 * Low level audio treating 
 	 * @param {Number} timeEndSong given in seconds 
@@ -8,6 +8,7 @@ define(['jquery', 'pubsub', 'modules/Audio/src/AudioContext'], function($, pubsu
 		this.audioCtx = new AudioContext();
 		this.source = this.audioCtx.createBufferSource();
 		this.isEnabled = false; //accessed publicly
+		this.sources = [];
 		this.startedAt;
 		this.startMargin;
 		this.pausedAt = 0;
@@ -30,19 +31,15 @@ define(['jquery', 'pubsub', 'modules/Audio/src/AudioContext'], function($, pubsu
 	 * @param  {String} url source of audi file
 	 */
 	AudioController.prototype.load = function(url, tempo, startMargin, loop, callback) {
+		url = _.isArray(url) ? url : [url];
 		if (!tempo){
 			throw "AudioController load missing tempo";
 		}
-		var xhr = new XMLHttpRequest();
-		xhr.open("GET", url);
-		xhr.responseType = 'arraybuffer';
-		xhr.withCredentials = false;
 		var self = this;
-
-		xhr.onload = function() {
-			var audioData = xhr.response;
-			self.audioCtx.decodeAudioData(audioData, function(buffer) {
-				self.buffer = buffer;
+		self.bufferLoader = new BufferLoader(
+			this.audioCtx,
+			url, 
+			function() {
 				self._setParams(tempo);
 				self.startMargin = startMargin || 0;
 				self.isEnabled = true;
@@ -51,15 +48,20 @@ define(['jquery', 'pubsub', 'modules/Audio/src/AudioContext'], function($, pubsu
 				}
 				$.publish('PlayerModel-onload', 'audio');
 				$.publish('Audio-Loaded', [self, tempo] );
-				if (callback){
+				if (_.isFunction(callback)) {
 					callback();
 				}
-			},
-			function(e) {
-				throw "Error with decoding audio data" + e.err;
-			});
-		};
-		xhr.send();
+			}
+		);
+		self.bufferLoader.load();
+	};
+
+	AudioController.prototype.createSourcesFromBuffers = function(){
+		_.forEach(this.bufferLoader.bufferList, function(buffer) {
+			this.sources.push(this.audioCtx.createBufferSource())
+            _.last(this.sources).buffer = buffer;
+            _.last(this.sources).connect(this.audioCtx.destination);
+		}, this);
 	};
 
 	/**
@@ -82,39 +84,42 @@ define(['jquery', 'pubsub', 'modules/Audio/src/AudioContext'], function($, pubsu
 
 	AudioController.prototype.play = function(pos) {
 		if (this.isPlaying || !this.isEnabled) return;
+		this.sources = [];
+		this.createSourcesFromBuffers.apply(this);
 		$.publish('Audio-play', this);
 		if (pos) {
 			this.pausedAt = pos * 1000;
 		}
-		this.source = this.audioCtx.createBufferSource(); // creates a sound source
-		this.source.buffer = this.buffer; // tell the source which sound to play
-		this.source.connect(this.audioCtx.destination); // connect the source to the context's destination (the speakers)
-
+		var offset = 0;
 		if (!this.pausedAt) {
 			this.startedAt = Date.now();
-			this.source.start(0);
 		} else {
 			this.startedAt = Date.now() - this.pausedAt;
-			this.source.start(0, this.pausedAt / 1000);
+			offset = this.pausedAt / 1000;
 		}
-		if (this.presetLoop) {
-			this.source.loop = true;
-			this.source.loopStart = this.presetLoop.from;
-			this.source.loopEnd = this.presetLoop.to;
+		for (var i in this.sources) {
+			this.sources[i].start(0, offset);
 		}
+		// if (this.presetLoop) {
+		// 	this.source.loop = true;
+		// 	this.source.loopStart = this.presetLoop.from;
+		// 	this.source.loopEnd = this.presetLoop.to;
+		// }
 		this.isPlaying = true;
 
 		var self = this;
 		//on end playing, we stoped if it is in the end of the file 
-		this.source.onended = function() {
-			if (self.getCurrentTime() > self.timeEndSong) {
-				self.stop();
-			}
-		}
+		// this.source.onended = function() {
+		// 	if (self.getCurrentTime() > self.timeEndSong) {
+		// 		self.stop();
+		// 	}
+		// }
 		$.publish('PlayerModel-onplay');
 	};
+
 	AudioController.prototype.getDuration = function() {
-		return this.buffer.duration;
+		// all buffers have the same duration, so take the first one
+		return _.first(this.bufferLoader.bufferList).duration;
 	};
 	AudioController.prototype.getBeatDuration = function() {
 		return this.beatDuration;
@@ -162,7 +167,9 @@ define(['jquery', 'pubsub', 'modules/Audio/src/AudioContext'], function($, pubsu
 	};
 
 	AudioController.prototype._stopPlaying = function() {	
-		this.source.stop(0);
+		for (var i in this.sources) {
+			this.sources[i].stop(0);
+		}
 		this.isPlaying = false;
 		this.pos = 0;
 		$.publish('Audio-stop', this);
@@ -174,6 +181,7 @@ define(['jquery', 'pubsub', 'modules/Audio/src/AudioContext'], function($, pubsu
 		this.pausedAt = this._getCurrentPlayingTime();
 		$.publish('PlayerModel-onpause');
 	};
+
 	AudioController.prototype.stop = function() {
 		if (this.isPlaying) {
 			this._stopPlaying();
@@ -203,7 +211,7 @@ define(['jquery', 'pubsub', 'modules/Audio/src/AudioContext'], function($, pubsu
 		this.presetLoop = {
 			from: from,
 			to: to
-		}
+		};
 	};
 
 	AudioController.prototype.disableLoop = function() {

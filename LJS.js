@@ -141,7 +141,9 @@ define(
 			var audioModule = new AudioModule(songModel, 
 			{
 				viewer: viewer,
-				notesCursor: snglPlayerCursor.getInstance()
+				notesCursor: snglPlayerCursor.getInstance(),
+				audioAnimation: playerViewOptions.audioAnimation,
+				audioDrawer: playerViewOptions.audioDrawer
 			});
 			if (options.audio.audioFile) {
 				audioModule.load(options.audio.audioFile, options.audio.tempo);
