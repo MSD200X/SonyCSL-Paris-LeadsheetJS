@@ -18,6 +18,7 @@ define(['jquery'], function($){
 			self.restartAnimationLoop(audio);
 		});
 		$.subscribe('Audio-stop', function(el, audio) {
+			console.log('audio stop!!!!!')
 			if (self.animationId) {
 				window.cancelAnimationFrame(self.animationId);
 				self.animationId = null;

@@ -109,11 +109,11 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 
 		var self = this;
 		//on end playing, we stoped if it is in the end of the file 
-		// this.source.onended = function() {
-		// 	if (self.getCurrentTime() > self.timeEndSong) {
-		// 		self.stop();
-		// 	}
-		// }
+		_.first(this.sources).onended = function() {
+			if (self.getCurrentTime() > self.timeEndSong) {
+				self.stop();
+			}
+		};
 		$.publish('PlayerModel-onplay');
 	};
 
