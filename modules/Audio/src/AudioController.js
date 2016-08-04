@@ -109,12 +109,12 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 		}
 		for (var i in this.sources) {
 			this.sources[i].start(0, offset);
+			if (this.presetLoop) {
+				this.sources[i].loop = true;
+				this.sources[i].loopStart = this.presetLoop.from;
+				this.sources[i].loopEnd = this.presetLoop.to;
+			}
 		}
-		// if (this.presetLoop) {
-		// 	this.source.loop = true;
-		// 	this.source.loopStart = this.presetLoop.from;
-		// 	this.source.loopEnd = this.presetLoop.to;
-		// }
 		this.isPlaying = true;
 
 		var self = this;
@@ -168,8 +168,8 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 	 */
 	AudioController.prototype._getCurrentPlayingTime = function() {
 		var now = Date.now() - this.startedAt /* + this.pos * 1000*/ ; //in ms
-		if (_.first(this.sources).loop) {
-			return this._calcTime(now, this.source.loopStart, this.source.loopEnd);
+		if (this.sources.length > 0 && _.first(this.sources).loop) {
+			return this._calcTime(now, _.first(this.sources).loopStart, _.first(this.sources).loopEnd);
 		} else {
 			return now;
 		}
