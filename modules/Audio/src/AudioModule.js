@@ -26,7 +26,7 @@ define([
 			if (useAudioCursor || params.notesCursor) {
 				var notesCursor = params.notesCursor;
 				var chordsCursor = params.chordsCursor;
-    	    	audioAnimation = new AudioAnimation();
+    	    	audioAnimation = new AudioAnimation(params.playerView);
 
 	    	    if (notesCursor) {
 	    	    	var notesCursorUpdater = new NotesCursorUpdater(song, notesCursor);

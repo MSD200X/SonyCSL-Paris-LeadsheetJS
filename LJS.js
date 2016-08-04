@@ -143,7 +143,8 @@ define(
 				viewer: viewer,
 				notesCursor: snglPlayerCursor.getInstance(),
 				audioAnimation: playerViewOptions.audioAnimation,
-				audioDrawer: playerViewOptions.audioDrawer
+				audioDrawer: playerViewOptions.audioDrawer,
+				playerView: playerView
 			});
 			if (options.audio.audioFile) {
 				audioModule.load(options.audio.audioFile, options.audio.tempo);

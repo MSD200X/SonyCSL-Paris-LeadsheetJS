@@ -304,6 +304,7 @@ define([
 	};
 
 	PlayerView.prototype.updateProgressbar = function(value, duration) {
+		console.log(value, duration);
 		var $div = $('.progress_bar_player').find('div');
 		$div.attr('aria-valuenow', value);
 		$div.css('width', value + '%');
