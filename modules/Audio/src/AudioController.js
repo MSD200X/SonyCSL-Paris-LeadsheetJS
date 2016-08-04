@@ -6,7 +6,7 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 	function AudioController(song) {
 		this.song = song;
 		this.audioCtx = new AudioContext();
-		this.source = this.audioCtx.createBufferSource();
+		this.sources = [];
 		this.isEnabled = false; //accessed publicly
 		this.sources = [];
 		this.startedAt;
@@ -27,6 +27,7 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 		this.beatDuration = 60 / tempo;
 		this.timeEndSong = this.beatDuration * this.songNumBeats; //song duration until last beat (without residual audi
 	};
+
 	/**
 	 * @param  {String} url source of audi file
 	 */
@@ -58,10 +59,19 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 
 	AudioController.prototype.createSourcesFromBuffers = function(){
 		_.forEach(this.bufferLoader.bufferList, function(buffer) {
-			this.sources.push(this.audioCtx.createBufferSource())
-            _.last(this.sources).buffer = buffer;
-            _.last(this.sources).connect(this.audioCtx.destination);
+			var newSource = this.audioCtx.createBufferSource();
+			this.sources.push(newSource);
+            newSource.buffer = buffer;
+            newSource.connect(this.audioCtx.destination);
+            // Connect the source to the gain node.
+            if (this.globalGainNode) {
+				newSource.connect(this.globalGainNode);
+			}
 		}, this);
+		if (this.globalGainNode) {
+			// Connect the gain node to the destination.
+			this.globalGainNode.connect(this.audioCtx.destination);
+		}
 	};
 
 	/**
@@ -125,6 +135,13 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 		return this.beatDuration;
 	};
 
+	AudioController.prototype.getGlobalGain = function() {
+		// Create a gain node.
+		this.globalGainNode = this.audioCtx.createGain();
+
+		return this.globalGainNode;
+	};
+
 	/**
 	 * 
 	 * @param  {Number} now       in milliseconds
@@ -151,7 +168,7 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 	 */
 	AudioController.prototype._getCurrentPlayingTime = function() {
 		var now = Date.now() - this.startedAt /* + this.pos * 1000*/ ; //in ms
-		if (this.source.loop) {
+		if (_.first(this.sources).loop) {
 			return this._calcTime(now, this.source.loopStart, this.source.loopEnd);
 		} else {
 			return now;

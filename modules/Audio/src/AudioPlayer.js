@@ -1,6 +1,9 @@
 define(['jquery', 'pubsub'], function($, pubsub) {
 	function AudioPlayer(audio){
 		this.audio = audio;
+		this.gainNode = audio.getGlobalGain();
+		// default gain value
+		this.gainNode.gain.value = 0.7;
 		this._initSubscribe();
 		this.startPos = 0;
 		this.endPos = 0;
@@ -25,6 +28,12 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 			self.startPos = null;
 			self.audio.pause();
 		});
+		$.subscribe('ToPlayer-onVolume', function(el, volume) {
+			if (self.gainNode) {
+				console.log('set volume to ' + volume)
+				self.gainNode.gain.value = volume;
+			}
+		});
 		$.subscribe("Audio-end", function(){
 			self.startPos = null;
 		});
@@ -32,10 +41,10 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 			self.startPos = null;
 			self.audio.stop();
 		});
-		$.subscribe('ToAudioPlayer-disable', function(){
+		$.subscribe('ToAudioPlayer-disable', function() {
 			self.audio.disable(true); //true to not disable audio
 		});
-		$.subscribe('ToAudioPlayer-enable', function(){
+		$.subscribe('ToAudioPlayer-enable', function() {
 			self.audio.enable(true); //true to not disable audio
 		});
 		$.subscribe('ToPlayer-playPause', function() {
