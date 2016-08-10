@@ -10,7 +10,7 @@ define([
 	function AudioModule(song, params){
 		params = params || {};
 		var audio = new AudioController(song);
-		new AudioPlayer(audio);
+		new AudioPlayer(audio, params.playerView);
 
 
 		if (params){

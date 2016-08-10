@@ -96,7 +96,7 @@ define([
 		};
 
 		PlayerModel_MidiCSL.prototype.load = function() {
-			if (MIDI !== undefined) {
+			if (MIDI) {
 				this.instrumentsIndex = this.getAllInstrumentsIndex();
 				this.instrumentsName = this.getAllInstrumentsName();
 				this.initMidiChannels(this.instrumentsIndex);
@@ -152,9 +152,11 @@ define([
 		};
 
 		PlayerModel_MidiCSL.prototype.mute = function() {
-			this.chords.tmpVolume = this.getChordsVolume();
-			this.melody.tmpVolume = this.getMelodyVolume();
-			this.setVolume(0);
+			if (this.playState) {
+				// this.chords.tmpVolume = this.getChordsVolume();
+				// this.melody.tmpVolume = this.getMelodyVolume();
+				this.setVolume(0);
+			}
 		};
 
 		PlayerModel_MidiCSL.prototype.unmute = function() {
@@ -187,7 +189,7 @@ define([
 			if (typeof volume === "undefined" || isNaN(volume)) {
 				throw 'PlayerModel_MidiCSL - setVolume - volume must be a number ' + volume;
 			}
-			$.publish('PlayerModel-onvolumechange', volume);
+			// $.publish('PlayerModel-onvolumechange', volume);
 			this.setMelodyVolume(volume);
 			this.setChordsVolume(volume);
 			localStorage.setItem("player-volume", volume);

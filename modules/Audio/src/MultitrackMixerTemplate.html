@@ -1,0 +1,12 @@
+<div class="wrapper" style="position:fixed; bottom: 69px; background-color:white;padding: 10px 0;z-index:100;border: 1px solid black;">
+	<div class="container-fluid">
+		<div id="multitrack-mixer" class="row">
+			{{#tracks}}
+			<div class="col-md-{{col}}">
+				<span class="track-name">{{name}}</span>
+				<input type="range" id="track-volume-{{index}}" value="70" />
+			</div>
+			{{/tracks}}
+		</div>
+	</div>
+</div>

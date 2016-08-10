@@ -63,15 +63,20 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 			this.sources.push(newSource);
             newSource.buffer = buffer;
             newSource.connect(this.audioCtx.destination);
-            // Connect the source to the gain node.
-            if (this.globalGainNode) {
-				newSource.connect(this.globalGainNode);
-			}
 		}, this);
-		if (this.globalGainNode) {
-			// Connect the gain node to the destination.
-			this.globalGainNode.connect(this.audioCtx.destination);
-		}
+		$.publish('AudioController-BuffersLoadedIntoSources');
+	};
+
+	AudioController.prototype.getGainsForTracks = function() {
+		var gains = [];
+		console.log(this.sources);
+		// _.forEach(this.sources, function(source) {
+		// 	var gainNode = this.audioCtx.createGain();
+		// 	source.connect(gainNode);
+		// 	gainNode.connect(this.audioCtx.destination);
+		// 	gains.push(gainNode);
+		// }, this);
+		return gains;
 	};
 
 	/**
@@ -138,7 +143,11 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 	AudioController.prototype.getGlobalGain = function() {
 		// Create a gain node.
 		this.globalGainNode = this.audioCtx.createGain();
-
+		_.forEach(this.sources, function(source) {
+			source.connect(this.globalGainNode);
+		}, this);
+		// Connect the gain node to the destination.
+		this.globalGainNode.connect(this.audioCtx.destination);
 		return this.globalGainNode;
 	};
 
