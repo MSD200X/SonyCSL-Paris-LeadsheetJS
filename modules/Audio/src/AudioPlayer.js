@@ -26,11 +26,11 @@ define(
 					this.$tplRendered.remove();
 					this.$tplRendered = false;
 				}
-				self.gainNode = self.audio.getGlobalGain();
-				var gains = self.audio.getGainsForTracks();
+				// self.gainNode = self.audio.getGlobalGain();
+				self.gains = self.audio.getGainsForTracks();
 				console.log(gains);
 				var tracks = [];
-				_.forEach(gains, function(gain, index) {
+				_.forEach(self.gains, function(gain, index) {
 					tracks.push({
 						name: 'Track ' + (index + 1),
 						index: index
@@ -45,12 +45,9 @@ define(
 					}
 				));
 				this.$tplRendered.find('input[type=range]').change(function(){
-					console.log('value: ' + $(this).val());
-					var gainValue = ($(this).val() / 100) * 2 - 1;
-					console.log(gainValue);
 					var gainIdx = parseInt($(this).attr('id').split('-')[2], 10);
-					console.log(gains[gainIdx]);
-					gains[gainIdx].gain.value = gainValue;
+					var newVolume = $(this).val()/100;
+					self._setGainValue(newVolume, self.gains[gainIdx]);
 				});
 				$('body').append(this.$tplRendered);
 				console.log(this.$tplRendered);
@@ -74,6 +71,7 @@ define(
 			$.subscribe('ToPlayer-onVolume', function(el, volume) {
 				if (self.gainNode) {
   					self._setGainValue(volume, self.gainNode);
+  					self.playerView.adaptSoundButton(volume);
 				}
 			});
 			$.subscribe("Audio-end", function(){
@@ -112,10 +110,9 @@ define(
 
 		AudioPlayer.prototype._setGainValue = function(volume, gainNode) {
 			console.log(gainNode);
-			var newVolume = volume * 2 - 1;
-			console.log('set volume to ' + newVolume)
-			gainNode.gain.value = newVolume;
-			this.playerView.adaptSoundButton(volume);
+			volume = volume * 2 - 1;
+			console.log('set volume to ' + volume)
+			gainNode.gain.value = Math.sign(volume) * Math.pow(volume, 2);
 		};
 
 		return AudioPlayer;

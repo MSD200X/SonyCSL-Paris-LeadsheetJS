@@ -70,14 +70,26 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 	AudioController.prototype.getGainsForTracks = function() {
 		var gains = [];
 		console.log(this.sources);
-		// _.forEach(this.sources, function(source) {
-		// 	var gainNode = this.audioCtx.createGain();
-		// 	source.connect(gainNode);
-		// 	gainNode.connect(this.audioCtx.destination);
-		// 	gains.push(gainNode);
-		// }, this);
+		_.forEach(this.sources, function(source) {
+			var gainNode = this.audioCtx.createGain();
+			source.connect(gainNode);
+			gainNode.connect(this.audioCtx.destination);
+			gains.push(gainNode);
+		}, this);
 		return gains;
 	};
+
+	AudioController.prototype.getGlobalGain = function() {
+		// Create a gain node.
+		this.globalGainNode = this.audioCtx.createGain();
+		// _.forEach(this.sources, function(source) {
+		// 	source.connect(this.globalGainNode);
+		// }, this);
+		// Connect the gain node to the destination.
+		this.globalGainNode.connect(this.audioCtx.destination);
+		return this.globalGainNode;
+	};
+
 
 	/**
 	 * it is called after audio is loaded
@@ -139,18 +151,6 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 	AudioController.prototype.getBeatDuration = function() {
 		return this.beatDuration;
 	};
-
-	AudioController.prototype.getGlobalGain = function() {
-		// Create a gain node.
-		this.globalGainNode = this.audioCtx.createGain();
-		_.forEach(this.sources, function(source) {
-			source.connect(this.globalGainNode);
-		}, this);
-		// Connect the gain node to the destination.
-		this.globalGainNode.connect(this.audioCtx.destination);
-		return this.globalGainNode;
-	};
-
 	/**
 	 * 
 	 * @param  {Number} now       in milliseconds
