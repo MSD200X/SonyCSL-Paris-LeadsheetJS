@@ -31,15 +31,16 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 	/**
 	 * @param  {String} url source of audi file
 	 */
-	AudioController.prototype.load = function(url, tempo, startMargin, loop, callback) {
-		url = _.isArray(url) ? url : [url];
+	AudioController.prototype.load = function(urls, tempo, startMargin, loop, callback, tracksNames) {
+		urls = _.isArray(urls) ? urls : [urls];
 		if (!tempo){
 			throw "AudioController load missing tempo";
 		}
 		var self = this;
+		self.tracksNames = tracksNames;
 		self.bufferLoader = new BufferLoader(
 			this.audioCtx,
-			url, 
+			urls, 
 			function() {
 				self._setParams(tempo);
 				self.startMargin = startMargin || 0;
@@ -58,10 +59,13 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 	};
 
 	AudioController.prototype.createSourcesFromBuffers = function(){
-		_.forEach(this.bufferLoader.bufferList, function(buffer) {
+		_.forEach(this.bufferLoader.bufferList, function(buffer, index) {
 			var newSource = this.audioCtx.createBufferSource();
 			this.sources.push(newSource);
             newSource.buffer = buffer;
+            if (this.tracksNames && this.tracksNames[index]) {
+            	newSource.name = this.tracksNames[index];
+            }
             newSource.connect(this.audioCtx.destination);
 		}, this);
 		$.publish('AudioController-BuffersLoadedIntoSources');
@@ -78,18 +82,6 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 		}, this);
 		return gains;
 	};
-
-	AudioController.prototype.getGlobalGain = function() {
-		// Create a gain node.
-		this.globalGainNode = this.audioCtx.createGain();
-		// _.forEach(this.sources, function(source) {
-		// 	source.connect(this.globalGainNode);
-		// }, this);
-		// Connect the gain node to the destination.
-		this.globalGainNode.connect(this.audioCtx.destination);
-		return this.globalGainNode;
-	};
-
 
 	/**
 	 * it is called after audio is loaded

@@ -8,7 +8,7 @@ define(
 	function($, _, Mustache, MultitrackMixerTemplate) {
 
 		function AudioPlayer(audio, playerView){
-			this.defaultGainValue = 0.7;
+			this.masterVolume = $('#volume_controller').val()/100;
 			this.audio = audio;
 			this.playerView = playerView;
 			// default gain value
@@ -28,29 +28,28 @@ define(
 				}
 				// self.gainNode = self.audio.getGlobalGain();
 				self.gains = self.audio.getGainsForTracks();
-				console.log(gains);
+				console.log(self.gains);
 				var tracks = [];
 				_.forEach(self.gains, function(gain, index) {
 					tracks.push({
-						name: 'Track ' + (index + 1),
+						name: self.audio.sources[index].name,
 						index: index
 					});
+					self.audio.sources[index].volume = 0.7;
 				});
-				var columnSize = Math.floor(12 / tracks.length);
 				this.$tplRendered = $(Mustache.render(
 					MultitrackMixerTemplate,
 					{
 						tracks: tracks,
-						col: columnSize
 					}
 				));
 				this.$tplRendered.find('input[type=range]').change(function(){
 					var gainIdx = parseInt($(this).attr('id').split('-')[2], 10);
 					var newVolume = $(this).val()/100;
-					self._setGainValue(newVolume, self.gains[gainIdx]);
+					self._setGainValue(newVolume, self.gains[gainIdx], self.audio.sources[gainIdx]);
 				});
 				$('body').append(this.$tplRendered);
-				console.log(this.$tplRendered);
+				$.publish("Audioplayer-multitrackMixerInserted", {$element: this.$tplRendered});
 			});
 			$.subscribe("AudioCursor-clickedAudio", function(el, posCursor) {
 				self.startPos = posCursor;
@@ -69,10 +68,11 @@ define(
 				self.audio.pause();
 			});
 			$.subscribe('ToPlayer-onVolume', function(el, volume) {
-				if (self.gainNode) {
-  					self._setGainValue(volume, self.gainNode);
-  					self.playerView.adaptSoundButton(volume);
-				}
+				self.masterVolume = volume;
+				self.playerView.adaptSoundButton(volume);
+				_.forEach(self.gains, function(gainNode, index){
+					self._setGainValue(self.audio.sources[index].volume, gainNode, self.audio.sources[index]);
+				});
 			});
 			$.subscribe("Audio-end", function(){
 				self.startPos = null;
@@ -108,11 +108,12 @@ define(
 			});
 		};
 
-		AudioPlayer.prototype._setGainValue = function(volume, gainNode) {
+		AudioPlayer.prototype._setGainValue = function(volume, gainNode, source) {
 			console.log(gainNode);
-			volume = volume * 2 - 1;
-			console.log('set volume to ' + volume)
-			gainNode.gain.value = Math.sign(volume) * Math.pow(volume, 2);
+			source.volume = volume;
+			volume = volume * this.masterVolume * 2 - 1;
+			console.log('set volume to ' + volume + ' with masterVolume set to ' + this.masterVolume)
+			gainNode.gain.value = volume;
 		};
 
 		return AudioPlayer;
