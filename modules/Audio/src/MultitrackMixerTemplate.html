@@ -2,10 +2,14 @@
 	<div class="container-fluid">
 		<div id="multitrack-mixer" class="row">
 			{{#tracks}}
-			<div class="col-md-3 track-gain-wrapper">
-				<span class="track-name">{{name}}</span>
-				<input type="range" id="track-volume-{{index}}" value="70" />
-			</div>
+				<div class="col-md-3 track-gain-wrapper">
+					<form class="form-inline">
+						<div class="form-group">
+							<label for="track-volume-{{index}}" class="track-name">{{name}}</label>
+							<input type="range" id="track-volume-{{index}}" class="form-control" value="70" />
+						</div>
+					</form>	
+				</div>
 			{{/tracks}}
 		</div>
 	</div>

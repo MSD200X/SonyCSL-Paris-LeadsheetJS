@@ -8,6 +8,7 @@ define(
 	function($, _, Mustache, MultitrackMixerTemplate) {
 
 		function AudioPlayer(audio, playerView){
+			this.defaultGainValue = 0.7;
 			this.masterVolume = $('#volume_controller').val()/100;
 			this.audio = audio;
 			this.playerView = playerView;
@@ -26,16 +27,14 @@ define(
 					this.$tplRendered.remove();
 					this.$tplRendered = false;
 				}
-				// self.gainNode = self.audio.getGlobalGain();
 				self.gains = self.audio.getGainsForTracks();
-				console.log(self.gains);
 				var tracks = [];
 				_.forEach(self.gains, function(gain, index) {
 					tracks.push({
 						name: self.audio.sources[index].name,
 						index: index
 					});
-					self.audio.sources[index].volume = 0.7;
+					self.audio.sources[index].volume = self.defaultGainValue;
 				});
 				this.$tplRendered = $(Mustache.render(
 					MultitrackMixerTemplate,
