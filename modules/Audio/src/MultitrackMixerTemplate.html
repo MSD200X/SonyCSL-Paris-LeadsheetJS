@@ -3,10 +3,18 @@
 		<div id="multitrack-mixer" class="row">
 			{{#tracks}}
 				<div class="col-md-3 track-gain-wrapper">
-					<form class="form-inline">
+					<form class="form-inline text-center">
 						<div class="form-group">
 							<label for="track-volume-{{index}}" class="track-name">{{name}}</label>
 							<input type="range" id="track-volume-{{index}}" class="form-control" value="70" />
+							<div class="btn-group" role="group" style="margin-left:5px;">
+								<button type="button" class="btn btn-default btn-xs btn-mute-track">
+									<span class="glyphicon glyphicon-volume-off" aria-hidden="true"></span>
+								</button>
+								<button type="button" class="btn btn-default btn-xs btn-solo-track">
+									<span class="glyphicon glyphicon-headphones" aria-hidden="true"></span>
+								</button>
+							</div>
 						</div>
 					</form>	
 				</div>

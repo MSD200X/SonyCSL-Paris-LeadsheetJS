@@ -137,6 +137,7 @@ define([
 		LSViewer.prototype._initSubscribe = function() {
 			var self = this;
 			$.subscribe('ToViewer-draw', function(el, songModel, forceNewCanvasLayer) {
+				console.log('draw');
 				if (!songModel) {
 					throw "Need songModel to draw";
 				}
@@ -149,10 +150,13 @@ define([
 					throw "Need songModel to draw";
 				}
 				var width = self._getWidthFromContainer(this.divContainer);
-				self.canvas.width = width;
-				self._resize(width);
-				self.forceNewCanvasLayer = true;
-				self.draw(songModel);
+				if (self.canvas.width !== width) {
+					console.log('resize!!!!')
+					self.canvas.width = width;
+					self._resize(width);
+					self.forceNewCanvasLayer = true;
+					self.draw(songModel);
+				}
 			});
 		};
 		LSViewer.prototype._resize = function(width) {

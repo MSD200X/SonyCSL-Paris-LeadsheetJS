@@ -105,13 +105,25 @@ define(
 					$.publish('PlayerModel-toggleLoop', self.loopEnabled);
 				}
 			});
+			$(document).on('click', 'button.btn-mute-track', function() {
+				var $btn = $(this);
+				// $btn.toggleClass('active');
+				// var newVolume = $btn.hasClass('active') ? 0 : self.defaultGainValue * 100;
+				$btn.parents('.form-group').find('input[type="range"]').val(0).change();
+			});
+			$(document).on('click', 'button.btn-solo-track', function() {
+				var previousValue = $(this).parents('.form-group').find('input[type="range"]').val();
+				$('button.btn-mute-track').click();
+				previousValue = previousValue || self.defaultGainValue;
+				$(this).parents('.form-group').find('input[type="range"]').val(previousValue).change();
+			});
 		};
 
 		AudioPlayer.prototype._setGainValue = function(volume, gainNode, source) {
-			console.log(gainNode);
+			// console.log(gainNode);
 			source.volume = volume;
 			volume = volume * this.masterVolume * 2 - 1;
-			console.log('set volume to ' + volume + ' with masterVolume set to ' + this.masterVolume)
+			// console.log('set volume to ' + volume + ' with masterVolume set to ' + this.masterVolume)
 			gainNode.gain.value = volume;
 		};
 
