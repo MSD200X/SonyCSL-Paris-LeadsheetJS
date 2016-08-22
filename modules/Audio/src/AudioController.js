@@ -53,6 +53,7 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 				if (_.isFunction(callback)) {
 					callback();
 				}
+				self.createSourcesFromBuffers.apply(self);
 			}
 		);
 		self.bufferLoader.load();
@@ -102,8 +103,9 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 
 	AudioController.prototype.play = function(pos) {
 		if (this.isPlaying || !this.isEnabled) return;
-		this.sources = [];
-		this.createSourcesFromBuffers.apply(this);
+		if (this.sources.length === 0) {
+			this.createSourcesFromBuffers.apply(this);
+		}
 		$.publish('Audio-play', this);
 		if (pos) {
 			this.pausedAt = pos * 1000;
@@ -187,6 +189,7 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 		for (var i in this.sources) {
 			this.sources[i].stop(0);
 		}
+		this.sources = [];
 		this.isPlaying = false;
 		this.pos = 0;
 		$.publish('Audio-stop', this);
