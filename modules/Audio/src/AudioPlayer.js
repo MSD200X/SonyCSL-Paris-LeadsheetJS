@@ -23,9 +23,9 @@ define(
 		AudioPlayer.prototype._initSubscribe = function() {
 			var self = this;
 			$.subscribe("AudioController-BuffersLoadedIntoSources", function() {
-				if (this.$tplRendered) {
-					this.$tplRendered.remove();
-					this.$tplRendered = false;
+				if (self.$tplRendered) {
+					self.$tplRendered.remove();
+					self.$tplRendered = false;
 				}
 				self.gains = self.audio.getGainsForTracks();
 				var tracks = [];
@@ -36,19 +36,19 @@ define(
 					});
 					self.audio.sources[index].volume = self.defaultGainValue;
 				});
-				this.$tplRendered = $(Mustache.render(
+				self.$tplRendered = $(Mustache.render(
 					MultitrackMixerTemplate,
 					{
 						tracks: tracks,
 					}
 				));
-				this.$tplRendered.find('input[type=range]').change(function(){
+				self.$tplRendered.find('input[type=range]').change(function(){
 					var gainIdx = parseInt($(this).attr('id').split('-')[2], 10);
 					var newVolume = $(this).val()/100;
 					self._setGainValue(newVolume, self.gains[gainIdx], self.audio.sources[gainIdx]);
 				});
-				$('body').append(this.$tplRendered);
-				$.publish("Audioplayer-multitrackMixerInserted", {$element: this.$tplRendered});
+				$('body').append(self.$tplRendered);
+				$.publish("Audioplayer-multitrackMixerInserted", {$element: self.$tplRendered});
 			});
 			$.subscribe("AudioCursor-clickedAudio", function(el, posCursor) {
 				self.startPos = posCursor;

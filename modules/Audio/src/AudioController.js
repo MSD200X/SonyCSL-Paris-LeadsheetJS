@@ -37,6 +37,7 @@ define(['jquery', 'underscore', 'modules/Audio/src/AudioContext', 'modules/Audio
 			throw "AudioController load missing tempo";
 		}
 		var self = this;
+		self.sources = [];
 		self.tracksNames = tracksNames;
 		self.bufferLoader = new BufferLoader(
 			this.audioCtx,
