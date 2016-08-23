@@ -153,8 +153,6 @@ define([
 
 		PlayerModel_MidiCSL.prototype.mute = function() {
 			if (this.playState) {
-				// this.chords.tmpVolume = this.getChordsVolume();
-				// this.melody.tmpVolume = this.getMelodyVolume();
 				this.setVolume(0);
 			}
 		};
@@ -435,36 +433,34 @@ define([
 			});
 		};
 
-		PlayerModel_MidiCSL.prototype.emptyPlayNotes = function() {
-			if (typeof MIDI.stopAllNotes !== "undefined") {
-				MIDI.stopAllNotes();
-			}
-			// melody and metronome
-			for (var i in this.noteTimeOut) {
-				window.clearTimeout(this.noteTimeOut[i]);
+		PlayerModel_MidiCSL.prototype.stopAllNotes = function() {
+			if (this.playState) {
+				if (typeof MIDI.stopAllNotes !== "undefined") {
+					try {
+						MIDI.stopAllNotes();
+					} catch (e) {
+						console.log(e);
+					}
+				}
+				for (var i in this.noteTimeOut) {
+					window.clearTimeout(this.noteTimeOut[i]);
+				}
 			}
 		};
 
+		PlayerModel_MidiCSL.prototype.emptyPlayNotes = function() {
+			this.stopAllNotes();
+		};
+
 		PlayerModel_MidiCSL.prototype.pause = function() {
+			this.stopAllNotes();
 			this.playState = false;
-			if (typeof MIDI.stopAllNotes !== "undefined") {
-				MIDI.stopAllNotes();
-			}
-			// melody and metronome
-			for (var i in this.noteTimeOut) {
-				window.clearTimeout(this.noteTimeOut[i]);
-			}
 			$.publish('PlayerModel-onpause');
 		};
 
 		PlayerModel_MidiCSL.prototype.stop = function(dontResetPosition) {
 			this.playState = false;
-			if (typeof MIDI.stopAllNotes !== "undefined") {
-				MIDI.stopAllNotes();
-			}
-			for (var i in this.noteTimeOut) {
-				window.clearTimeout(this.noteTimeOut[i]);
-			}
+			this.stopAllNotes();
 			if (!dontResetPosition) {
 				this.setPositionIndex(0);
 				if (self.progressBar)

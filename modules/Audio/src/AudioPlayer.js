@@ -29,12 +29,16 @@ define(
 				}
 				self.gains = self.audio.getGainsForTracks();
 				var tracks = [];
+				// console.log(self.audio.sources)
 				_.forEach(self.gains, function(gain, index) {
 					tracks.push({
 						name: self.audio.sources[index].name,
-						index: index
+						index: index,
+						gain: (self.audio.sources[index].volume !== undefined ? self.audio.sources[index].volume : self.defaultGainValue) * 100
 					});
-					self.audio.sources[index].volume = self.defaultGainValue;
+					if (_.isUndefined(self.audio.sources[index].volume)) {
+						self.audio.sources[index].volume = self.defaultGainValue;
+					}
 				});
 				self.$tplRendered = $(Mustache.render(
 					MultitrackMixerTemplate,
@@ -46,7 +50,7 @@ define(
 					var gainIdx = parseInt($(this).attr('id').split('-')[2], 10);
 					var newVolume = $(this).val()/100;
 					self._setGainValue(newVolume, self.gains[gainIdx], self.audio.sources[gainIdx]);
-				});
+				}).change();
 				$('body').append(self.$tplRendered);
 				$.publish("Audioplayer-multitrackMixerInserted", {$element: self.$tplRendered});
 			});
