@@ -40,7 +40,6 @@ define(
 				throw "AudioController load missing tempo";
 			}
 			var self = this;
-			self.sources = [];
 			self.tracksNames = tracksNames;
 			self.bufferLoader = new BufferLoader(
 				this.audioCtx,
@@ -73,16 +72,12 @@ define(
 	            if (this.tracksNames && this.tracksNames[index]) {
 	            	newSource.name = this.tracksNames[index];
 	            	var oldSource = _.find(this.sources, {name: newSource.name});
-	            	// console.log('oldSource')
-	            	// console.log(oldSource)
 	            	if (oldSource && oldSource.volume !== undefined) {
 	            		newSource.volume = oldSource.volume;
 	            	}
 	            }
 	            newSource.connect(this.audioCtx.destination);
 			}, this);
-			// console.log('newSources')
-			// console.log(newSources)
 			this.sources = newSources;
 			$.publish('AudioController-BuffersLoadedIntoSources');
 		};

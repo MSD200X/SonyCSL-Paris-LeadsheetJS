@@ -74,7 +74,9 @@ define(
 				self.masterVolume = volume;
 				self.playerView.adaptSoundButton(volume);
 				_.forEach(self.gains, function(gainNode, index){
-					self._setGainValue(self.audio.sources[index].volume, gainNode, self.audio.sources[index]);
+					if (self.audio.sources[index].isMuted !== true) {
+						self._setGainValue(self.audio.sources[index].volume, gainNode, self.audio.sources[index]);
+					}
 				});
 			});
 			$.subscribe("Audio-end", function(){
@@ -111,23 +113,41 @@ define(
 			});
 			$(document).on('click', 'button.btn-mute-track', function() {
 				var $btn = $(this);
-				// $btn.toggleClass('active');
-				// var newVolume = $btn.hasClass('active') ? 0 : self.defaultGainValue * 100;
-				$btn.parents('.form-group').find('input[type="range"]').val(0).change();
+				$btn.toggleClass('active');
+				var gainIndex = $btn.parents('.track-gain-wrapper').index();
+				if ($btn.hasClass('active')) {
+					self._setGainValue(0, self.gains[gainIndex]);
+					self.audio.sources[gainIndex].isMuted = true;
+				} else {
+					self._setGainValue(self.audio.sources[gainIndex].volume, self.gains[gainIndex]);
+					self.audio.sources[gainIndex].isMuted = false;
+				}
 			});
 			$(document).on('click', 'button.btn-solo-track', function() {
-				var previousValue = $(this).parents('.form-group').find('input[type="range"]').val();
-				$('button.btn-mute-track').click();
-				previousValue = previousValue || self.defaultGainValue;
-				$(this).parents('.form-group').find('input[type="range"]').val(previousValue).change();
+				var $btn = $(this);
+				$('button.btn-solo-track.active').not(this).removeClass('active');
+				$btn.toggleClass('active');
+				var gainIndex = $btn.parents('.track-gain-wrapper').index();
+				_.forEach(self.gains, function(gainNode, index) {
+					// default rule
+					var newVolume = self.audio.sources[index].isMuted ? 0 : self.audio.sources[index].volume;
+					if (index !== gainIndex) {
+						newVolume = $btn.hasClass('active') ? 0 : newVolume;
+					} else {
+						newVolume = $btn.hasClass('active') ? self.audio.sources[index].volume : newVolume;
+					}
+					console.log('apply gain ' + newVolume + ' to gain number ' + index + ' which has a mute ' + self.audio.sources[index].isMuted);
+					self._setGainValue(newVolume, gainNode);
+				});
 			});
 		};
 
 		AudioPlayer.prototype._setGainValue = function(volume, gainNode, source) {
-			// console.log(gainNode);
-			source.volume = volume;
-			volume = volume * this.masterVolume * 2 - 1;
-			// console.log('set volume to ' + volume + ' with masterVolume set to ' + this.masterVolume)
+			if (source) {
+				source.volume = volume;
+			}
+			volume = Math.pow(volume * this.masterVolume, 2) * 2 - 1;
+			// var logarithmicVolume = Math.
 			gainNode.gain.value = volume;
 		};
 

@@ -245,3 +245,7 @@ ul.item > li:hover{
 .gain-range-control{
 	padding:0;
 }
+.range-volume-wrapper{
+    display: inline-block;
+    margin: 0 5px;
+}
