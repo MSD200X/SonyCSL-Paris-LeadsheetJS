@@ -8,7 +8,8 @@ define(
 	function($, _, Mustache, MultitrackMixerTemplate) {
 
 		function AudioPlayer(audio, playerView){
-			this.defaultGainValue = 0.7;
+			this.defaultGainValue = -5;
+			this.muteValue = -40;
 			this.masterVolume = $('#volume_controller').val()/100;
 			this.audio = audio;
 			this.playerView = playerView;
@@ -34,7 +35,8 @@ define(
 					tracks.push({
 						name: self.audio.sources[index].name,
 						index: index,
-						gain: (self.audio.sources[index].volume !== undefined ? self.audio.sources[index].volume : self.defaultGainValue) * 100
+						gain: (self.audio.sources[index].volume !== undefined ? self.audio.sources[index].volume : self.defaultGainValue),
+						minValue: self.muteValue
 					});
 					if (_.isUndefined(self.audio.sources[index].volume)) {
 						self.audio.sources[index].volume = self.defaultGainValue;
@@ -48,7 +50,7 @@ define(
 				));
 				self.$tplRendered.find('input[type=range]').change(function(){
 					var gainIdx = parseInt($(this).attr('id').split('-')[2], 10);
-					var newVolume = $(this).val()/100;
+					var newVolume = $(this).val();
 					self._setGainValue(newVolume, self.gains[gainIdx], self.audio.sources[gainIdx]);
 				}).change();
 				$('body').append(self.$tplRendered);
@@ -116,7 +118,7 @@ define(
 				$btn.toggleClass('active');
 				var gainIndex = $btn.parents('.track-gain-wrapper').index();
 				if ($btn.hasClass('active')) {
-					self._setGainValue(0, self.gains[gainIndex]);
+					self._setGainValue(self.muteValue, self.gains[gainIndex]);
 					self.audio.sources[gainIndex].isMuted = true;
 				} else {
 					self._setGainValue(self.audio.sources[gainIndex].volume, self.gains[gainIndex]);
@@ -130,9 +132,9 @@ define(
 				var gainIndex = $btn.parents('.track-gain-wrapper').index();
 				_.forEach(self.gains, function(gainNode, index) {
 					// default rule
-					var newVolume = self.audio.sources[index].isMuted ? 0 : self.audio.sources[index].volume;
+					var newVolume = self.audio.sources[index].isMuted ? self.muteValue : self.audio.sources[index].volume;
 					if (index !== gainIndex) {
-						newVolume = $btn.hasClass('active') ? 0 : newVolume;
+						newVolume = $btn.hasClass('active') ? self.muteValue : newVolume;
 					} else {
 						newVolume = $btn.hasClass('active') ? self.audio.sources[index].volume : newVolume;
 					}
@@ -143,11 +145,16 @@ define(
 		};
 
 		AudioPlayer.prototype._setGainValue = function(volume, gainNode, source) {
+			volume = parseInt(volume);
 			if (source) {
 				source.volume = volume;
 			}
-			volume = Math.pow(volume * this.masterVolume, 2) * 2 - 1;
-			// var logarithmicVolume = Math.
+			if (volume === this.muteValue) {
+				volume = -1;
+			} else {
+				volume = Math.pow(10, (volume * this.masterVolume)/20) - 1;
+			}
+			console.log('volume in gain ' + volume);
 			gainNode.gain.value = volume;
 		};
 

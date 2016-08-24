@@ -1,9 +1,9 @@
 <datalist id="steplist">
+    <option>-40</option>
+    <option>-20</option>
+    <option>-10</option>
     <option>0</option>
-    <option>25</option>
-    <option>50</option>
-    <option>75</option>
-    <option>100</option>
+    <option>6</option>
 </datalist>
 <div id="multitrack-wrapper">
 	<div class="container-fluid">
@@ -15,7 +15,7 @@
 							<label for="track-volume-{{index}}" class="track-name">{{name}}</label>
 							<div class="range-volume-wrapper">
 								-∞
-								<input type="range" list="steplist" id="track-volume-{{index}}" class="form-control gain-range-control" value="{{gain}}" />
+								<input type="range" list="steplist" id="track-volume-{{index}}" class="form-control gain-range-control" max="6" min="{{minValue}}" value="{{gain}}" />
 								+6
 							</div>
 							<div class="btn-group" role="group" style="margin-left:5px;">
