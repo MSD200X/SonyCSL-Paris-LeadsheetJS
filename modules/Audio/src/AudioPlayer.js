@@ -138,7 +138,6 @@ define(
 					} else {
 						newVolume = $btn.hasClass('active') ? self.audio.sources[index].volume : newVolume;
 					}
-					console.log('apply gain ' + newVolume + ' to gain number ' + index + ' which has a mute ' + self.audio.sources[index].isMuted);
 					self._setGainValue(newVolume, gainNode);
 				});
 			});
@@ -150,12 +149,12 @@ define(
 				source.volume = volume;
 			}
 			if (volume === this.muteValue) {
-				volume = -1;
+				volume = 0;
 			} else {
-				volume = Math.pow(10, (volume * this.masterVolume)/20) - 1;
+				volume = Math.pow(10, volume/20);
 			}
-			console.log('volume in gain ' + volume);
-			gainNode.gain.value = volume;
+			gainNode.gain.value = volume * this.masterVolume - 1;
+			// console.log('gain set to ' + gainNode.gain.value + " with master " + this.masterVolume);
 		};
 
 		return AudioPlayer;
