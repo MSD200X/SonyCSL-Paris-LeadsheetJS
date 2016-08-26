@@ -51,6 +51,10 @@ define(['jquery'], function($) {
 		});
 	};
 
+	AjaxUtils.setDefaultDomain = function(defaultDomain) {
+		this.defaultDomain = defaultDomain;
+	};
+
 	/**
 	 * Direct link to the servlet ajax request with predefined ajax options
 	 * @param  {string}   servletRoot Servlet context root, eg. 'rechord', 'jsonsong', 'flow'
@@ -66,7 +70,7 @@ define(['jquery'], function($) {
 			throw 'AjaxUtils - servletRequest - servletName argument is undefined ' + servletName;
 		}
 		var request = {
-			url: 'http://apijava.flow-machines.com:8080/' + servletRoot + '/' + servletName,
+			url: this.defaultDomain + servletRoot + '/' + servletName,
 			type: 'POST',
 			data: data,
 			dataType: 'json',

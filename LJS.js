@@ -233,7 +233,7 @@ define(
 		if (MusicCSLJSON === undefined) {
 			throw "missing MusicCLJSON song";
 		}
-		
+		LJS.utils.AjaxUtils.setDefaultDomain(params.defaultDomain);
 		var useViewer = params.viewer !== undefined;
 		var usePlayer = params.player !== undefined;
 		var useEdition = params.edition !== undefined;

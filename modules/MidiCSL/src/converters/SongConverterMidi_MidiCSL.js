@@ -5,8 +5,7 @@ define([
 		'modules/MidiCSL/utils/MidiHelper',
 		'modules/core/src/NotesIterator',
 		'modules/core/src/SongBarsIterator',
-		'modules/converters/MusicCSLJson/src/SongModel_CSLJson',
-		'utils/AjaxUtils'
+		'modules/converters/MusicCSLJson/src/SongModel_CSLJson'
 	],
 	function(
 		SongModel,
@@ -15,8 +14,7 @@ define([
 		MidiHelper,
 		NotesIterator,
 		SongBarsIterator,
-		SongModel_CSLJson,
-		AjaxUtils
+		SongModel_CSLJson
 	) {
 		var SongConverterMidi_MidiCSL = {};
 		/**

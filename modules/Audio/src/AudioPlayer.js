@@ -35,11 +35,11 @@ define(
 					tracks.push({
 						name: self.audio.sources[index].name,
 						index: index,
-						gain: (self.audio.sources[index].volume !== undefined ? self.audio.sources[index].volume : self.defaultGainValue),
+						gain: (self.audio.sources[index].gain !== undefined ? self.audio.sources[index].gain : self.defaultGainValue),
 						minValue: self.muteValue
 					});
-					if (_.isUndefined(self.audio.sources[index].volume)) {
-						self.audio.sources[index].volume = self.defaultGainValue;
+					if (_.isUndefined(self.audio.sources[index].gain)) {
+						self.audio.sources[index].gain = self.defaultGainValue;
 					}
 				});
 				self.$tplRendered = $(Mustache.render(
@@ -77,7 +77,7 @@ define(
 				self.playerView.adaptSoundButton(volume);
 				_.forEach(self.gains, function(gainNode, index){
 					if (self.audio.sources[index].isMuted !== true) {
-						self._setGainValue(self.audio.sources[index].volume, gainNode, self.audio.sources[index]);
+						self._setGainValue(self.audio.sources[index].gain, gainNode, self.audio.sources[index]);
 					}
 				});
 			});
@@ -121,7 +121,7 @@ define(
 					self._setGainValue(self.muteValue, self.gains[gainIndex]);
 					self.audio.sources[gainIndex].isMuted = true;
 				} else {
-					self._setGainValue(self.audio.sources[gainIndex].volume, self.gains[gainIndex]);
+					self._setGainValue(self.audio.sources[gainIndex].gain, self.gains[gainIndex]);
 					self.audio.sources[gainIndex].isMuted = false;
 				}
 			});
@@ -132,28 +132,28 @@ define(
 				var gainIndex = $btn.parents('.track-gain-wrapper').index();
 				_.forEach(self.gains, function(gainNode, index) {
 					// default rule
-					var newVolume = self.audio.sources[index].isMuted ? self.muteValue : self.audio.sources[index].volume;
+					var newVolume = self.audio.sources[index].isMuted ? self.muteValue : self.audio.sources[index].gain;
 					if (index !== gainIndex) {
 						newVolume = $btn.hasClass('active') ? self.muteValue : newVolume;
 					} else {
-						newVolume = $btn.hasClass('active') ? self.audio.sources[index].volume : newVolume;
+						newVolume = $btn.hasClass('active') ? self.audio.sources[index].gain : newVolume;
 					}
 					self._setGainValue(newVolume, gainNode);
 				});
 			});
 		};
 
-		AudioPlayer.prototype._setGainValue = function(volume, gainNode, source) {
-			volume = parseInt(volume);
+		AudioPlayer.prototype._setGainValue = function(gain, gainNode, source) {
+			gain = parseInt(gain);
 			if (source) {
-				source.volume = volume;
+				source.gain = gain;
 			}
-			if (volume === this.muteValue) {
-				volume = 0;
+			if (gain === this.muteValue) {
+				gain = 0;
 			} else {
-				volume = Math.pow(10, volume/20);
+				gain = Math.pow(10, gain/20);
 			}
-			gainNode.gain.value = volume * this.masterVolume - 1;
+			gainNode.gain.value = gain * this.masterVolume - 1;
 			// console.log('gain set to ' + gainNode.gain.value + " with master " + this.masterVolume);
 		};
 

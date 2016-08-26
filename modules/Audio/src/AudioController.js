@@ -34,13 +34,13 @@ define(
 		/**
 		 * @param  {String} url source of audi file
 		 */
-		AudioController.prototype.load = function(urls, tempo, startMargin, loop, callback, tracksNames) {
+		AudioController.prototype.load = function(urls, tempo, startMargin, loop, callback, tracksProps) {
 			urls = _.isArray(urls) ? urls : [urls];
 			if (!tempo){
 				throw "AudioController load missing tempo";
 			}
 			var self = this;
-			self.tracksNames = tracksNames;
+			self.tracksProps = tracksProps;
 			self.bufferLoader = new BufferLoader(
 				this.audioCtx,
 				urls, 
@@ -66,17 +66,22 @@ define(
 		AudioController.prototype.createSourcesFromBuffers = function(){
 			var newSources = [];
 			_.forEach(this.bufferLoader.bufferList, function(buffer, index) {
-				var newSource = this.audioCtx.createBufferSource();
-				newSources.push(newSource);
-	            newSource.buffer = buffer;
-	            if (this.tracksNames && this.tracksNames[index]) {
-	            	newSource.name = this.tracksNames[index];
-	            	var oldSource = _.find(this.sources, {name: newSource.name});
-	            	if (oldSource && oldSource.volume !== undefined) {
-	            		newSource.volume = oldSource.volume;
-	            	}
-	            }
-	            newSource.connect(this.audioCtx.destination);
+				if (buffer) {
+					var newSource = this.audioCtx.createBufferSource();
+					newSources.push(newSource);
+		            newSource.buffer = buffer;
+		            if (this.tracksProps && this.tracksProps[index]) {
+		            	newSource.name = this.tracksProps[index].name;
+		            	// newSource.name = this.tracksProps[index].name;
+		            	var oldSource = _.find(this.sources, {name: newSource.name});
+		            	if (this.reloadSources === false && this.tracksProps && this.tracksProps[index]) {
+		            		newSource.gain = this.tracksProps[index].gain;
+		            	} else if (oldSource && oldSource.gain !== undefined) {
+		            		newSource.gain = oldSource.gain;
+		            	}
+		            }
+		            newSource.connect(this.audioCtx.destination);
+				}
 			}, this);
 			this.sources = newSources;
 			$.publish('AudioController-BuffersLoadedIntoSources');
@@ -148,8 +153,13 @@ define(
 		};
 
 		AudioController.prototype.getDuration = function() {
-			// all buffers have the same duration, so take the first one
-			return _.first(this.bufferLoader.bufferList).duration;
+			var duration;
+			_.each(this.bufferLoader.bufferList, function(buffer) {
+				if (buffer && buffer.duration) {
+					duration = buffer.duration;
+				}
+			});
+			return duration;
 		};
 		AudioController.prototype.getBeatDuration = function() {
 			return this.beatDuration;

@@ -16,6 +16,12 @@ define([],
 
       var loader = this;
 
+      var _callOnLoad = function() {
+        if (++loader.loadCount == loader.urlList.length) {
+            loader.onload();
+        }
+      };
+
       request.onload = function() {
         // Asynchronously decode the audio file data in request.response
         loader.context.decodeAudioData(
@@ -26,9 +32,7 @@ define([],
               return;
             }
             loader.bufferList[index] = buffer;
-            if (++loader.loadCount == loader.urlList.length) {
-                loader.onload();
-            }
+            _callOnLoad();
           },
           function(error) {
             console.error('decodeAudioData error', error);
@@ -37,7 +41,9 @@ define([],
       };
 
       request.onerror = function() {
-        alert('BufferLoader: XHR error');
+        console.log('BufferLoader: XHR error');
+        loader.bufferList[index] = false;
+        _callOnLoad();
       };
 
       request.send();
