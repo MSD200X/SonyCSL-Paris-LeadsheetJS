@@ -143,12 +143,10 @@ ul.item > li:hover{
 	padding: 0 1em;
 	vertical-align: top;
 }
-
-
-
 .player_item{
 	display: inline-block;
 	text-align: center;
+	vertical-align: middle;
 }
 
 #volume_slider_container {
@@ -198,7 +196,6 @@ ul.item > li:hover{
 	width: 41px;
 	margin: 0;
 }
-
 .progress_bar_player {
 	margin-bottom: 0;
 	-webkit-box-shadow: none;
@@ -208,12 +205,10 @@ ul.item > li:hover{
 	border-radius: 0;
 	cursor: pointer;
 }
-
 .progress_bar_player span {
 	line-height: 16px;
 	vertical-align: top;
 }
-
 /* ANNOTATION */
 /* for the moment bubble css for audio comments are here*/
 .speech-bubble {
@@ -246,4 +241,11 @@ ul.item > li:hover{
 /* UserLog */
 .alert{
 	font-size:medium;
+}
+.gain-range-control{
+	padding:0;
+}
+.range-volume-wrapper{
+    display: inline-block;
+    margin: 0 5px;
 }

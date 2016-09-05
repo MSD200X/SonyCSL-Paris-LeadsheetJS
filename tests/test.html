@@ -98,8 +98,9 @@
           'utils/test/testChordUtils',
           'utils/test/testNoteUtils',
           'modules/LSViewer/test/testSymbolsPositioner',
+          'modules/Unfold/test/testLeadsheetStructure'
         ],
-        function(QUnit, testSongModel, testSectionModel, testChordManager, testChordModel, testNoteManager, testNoteModel, testBarModel, testBarManager, testSongBarsIterator, testNotesIterator, testPitchClass, testNote, testTimeSignatureModel, testKeySignatureModel, testSongModel_CSLJson, testSectionModel_CSLJson, testBarModel_CSLJson, testChordManager_CSLJson, testChordModel_CSLJson, testNoteManager_CSLJson, testNoteModel_CSLJson, testSongModel_MusicXML, testSongView_chordSequence, testSongModel_MidiCSL, testNoteModel_MidiCSL, testPlayerModel_MidiCSL, testSongConverterMidi_MidiCSL, testChordManagerConverterMidi_MidiCSL, testHistoryModel, testChordEditionController, testNoteEditionController, testElementView, testStructureEditionController, testFileEditionController, testMainMenuModel, testMainMenuController, testBarWidthManager, tupletAndBeamsManager, testCursorModel, testAudioController, testUserLog, testAjaxUtils, testChordUtils, testNoteUtils, testSymbolsPositioner) {
+        function(QUnit, testSongModel, testSectionModel, testChordManager, testChordModel, testNoteManager, testNoteModel, testBarModel, testBarManager, testSongBarsIterator, testNotesIterator, testPitchClass, testNote, testTimeSignatureModel, testKeySignatureModel, testSongModel_CSLJson, testSectionModel_CSLJson, testBarModel_CSLJson, testChordManager_CSLJson, testChordModel_CSLJson, testNoteManager_CSLJson, testNoteModel_CSLJson, testSongModel_MusicXML, testSongView_chordSequence, testSongModel_MidiCSL, testNoteModel_MidiCSL, testPlayerModel_MidiCSL, testSongConverterMidi_MidiCSL, testChordManagerConverterMidi_MidiCSL, testHistoryModel, testChordEditionController, testNoteEditionController, testElementView, testStructureEditionController, testFileEditionController, testMainMenuModel, testMainMenuController, testBarWidthManager, tupletAndBeamsManager, testCursorModel, testAudioController, testUserLog, testAjaxUtils, testChordUtils, testNoteUtils, testSymbolsPositioner, testLeadsheetStructure) {
           QUnit.config.autoload = false;
           QUnit.config.autostart = false;
           function sendMessage() {
@@ -183,13 +184,13 @@
           testFileEditionController.run();
 
           //LSViewer Module
-          module('LSViewer')
+          module('LSViewer');
           testBarWidthManager.run();
           tupletAndBeamsManager.run();
           testSymbolsPositioner.run();
 
           // Midi sound model Module
-          module('Midi sound model')
+          module('Midi sound model');
           testPlayerModel_MidiCSL.run();
           testSongModel_MidiCSL.run();
           testNoteModel_MidiCSL.run();
@@ -201,6 +202,10 @@
           testHistoryModel.run();
           testMainMenuModel.run();
           testMainMenuController.run();
+
+          module('Unfold');
+          testLeadsheetStructure.run();
+
 
           testCursorModel.run();
 

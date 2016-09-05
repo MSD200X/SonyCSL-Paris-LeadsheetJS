@@ -1,0 +1,31 @@
+<datalist id="steplist">
+    <option>-40</option>
+    <option>-20</option>
+    <option>-10</option>
+    <option>0</option>
+    <option>6</option>
+</datalist>
+<div id="multitrack-wrapper">
+	<div class="container-fluid">
+		<div id="multitrack-mixer" class="row">
+			{{#tracks}}
+				<div class="col-md-3 track-gain-wrapper">
+					<form class="form-inline text-center">
+						<div class="form-group">
+							<label for="track-volume-{{index}}" class="track-name">{{name}}</label>
+							<div class="range-volume-wrapper">
+								-∞
+								<input type="range" list="steplist" id="track-volume-{{index}}" class="form-control gain-range-control" max="6" min="{{minValue}}" value="{{gain}}" />
+								+6
+							</div>
+							<div class="btn-group" role="group" style="margin-left:5px;">
+								<button type="button" class="btn btn-default btn-xs btn-mute-track">M</button>
+								<button type="button" class="btn btn-default btn-xs btn-solo-track">S</button>
+							</div>
+						</div>
+					</form>	
+				</div>
+			{{/tracks}}
+		</div>
+	</div>
+</div>

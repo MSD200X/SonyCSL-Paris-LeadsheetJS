@@ -9,49 +9,49 @@ define(['modules/core/src/BarModel'], function(BarModel) {
 				// begining
 				assert.throws(function() {
 					bar.setBegining();
-				});
+				},'throws error begining');
 				bar.setBegining('test');
-				assert.equal(bar.getBegining(), 'test');
+				assert.equal(bar.getBegining(), 'test', 'begining');
 
 				// clef
 				assert.throws(function() {
 					bar.setClef();
-				});
+				},'throws error clef');
 				bar.setClef('treble');
-				assert.equal(bar.getClef(), 'treble');
+				assert.equal(bar.getClef(), 'treble', 'clef');
 
 				bar.setClef('');
-				assert.equal(bar.getClef(), '');
+				assert.equal(bar.getClef(), '', 'empty clef');
 
 				// ending
 				bar.setEnding();
-				assert.equal(bar.getEnding(), undefined);
+				assert.equal(bar.getEnding(), undefined, 'ending');
 				bar.setEnding('1');
 				assert.equal(bar.getEnding(), '1');
 				
 				// style
 				bar.setStyle();
-				assert.equal(bar.getStyle(), '');
+				assert.equal(bar.getStyle(), '','style');
 				bar.setStyle('Jazz');
 				assert.equal(bar.getStyle(), 'Jazz');
 
 				// time signature
 				bar.setTimeSignatureChange();
-				assert.equal(bar.getTimeSignatureChange(), undefined);
+				assert.equal(bar.getTimeSignatureChange(), undefined, 'time signature change');
 
 				bar.setTimeSignatureChange('4/4');
 				assert.equal(typeof bar.getTimeSignatureChange(), "object");
 
 				// Tonality
 				bar.setKeySignatureChange();
-				assert.equal(bar.getKeySignatureChange(), '');
+				assert.equal(bar.getKeySignatureChange(), '', 'tonality');
 
 				bar.setKeySignatureChange('F');
-				assert.equal(bar.getKeySignatureChange(), 'F');
+				assert.equal(bar.getKeySignatureChange(), 'F', 'key signature change');
 
 				// Label
 				bar.setLabel();
-				assert.equal(bar.getLabel(), '');
+				assert.equal(bar.getLabel(), '', 'label');
 
 				bar.setLabel('Coda');
 				assert.equal(bar.getLabel(), 'Coda');

@@ -1,11 +1,10 @@
 define([
 	'jquery',
 	'mustache',
-	'modules/core/src/SongModel',
 	'utils/UserLog',
 	'pubsub',
 	'text!modules/ChordEdition/src/ChordEditionTemplate.html',
-], function($, Mustache, SongModel, UserLog, pubsub, ChordEditionTemplate) {
+], function($, Mustache, UserLog, pubsub, ChordEditionTemplate) {
 	/**
 	 * ChordEditionView creates chord edition template and link event from html to controller
 	 * @exports ChordEdition/ChordEditionView

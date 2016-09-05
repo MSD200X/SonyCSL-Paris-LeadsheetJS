@@ -2,11 +2,12 @@ define(['jquery'], function($){
 	/**
 	 * This object centralizes restartAnimation loops. Different cursors can be 'subscribed' to it. They need to have an 'update' method
 	 */ 
-	function AudioAnimation(){
+	function AudioAnimation(playerView){
 		//this.animationId;
 		this.cursors = [];
 		this._initSubscribe();
 		this.canvasLayer; //canvasLayer is initialised on viewer draw (see _initSubscribe)
+		this.playerView = playerView;
 	}
 
 	AudioAnimation.prototype._initSubscribe = function() {
@@ -32,12 +33,19 @@ define(['jquery'], function($){
 		var requestFrame = window.requestAnimationFrame ||
 			window.webkitRequestAnimationFrame;
 
+		var audioTracksDuration = audio.getDuration();
+		var lastProgressPercentage = 0;
 		var frame = function() {
 			self.animationId = requestFrame(frame);
 			for (var i = 0; i < self.cursors.length; i++) {
 				self.cursors[i].update(audio);
 			}
 			self.canvasLayer.refresh();
+			var newProgressPercentage = Math.round(audio.getCurrentTime()/audioTracksDuration * 100);
+			if (lastProgressPercentage !== newProgressPercentage) {
+				lastProgressPercentage = newProgressPercentage;
+				self.playerView.updateProgressbar(lastProgressPercentage, audioTracksDuration * 1000);
+			}
 		};
 		frame();
 	};

@@ -234,6 +234,8 @@
 					currentChord = this.chords[i];
 					if (currentChord.getBarNumber() === barNumber) {
 						chordsByBarNumber.push(currentChord);
+					}else if (currentChord.getBarNumber() > barNumber){
+						break;
 					}
 				}
 			}
@@ -295,7 +297,6 @@
 			}
 			return undefined;
 		};
-
 		/**
 		 * @interface cloneElems
 		 *

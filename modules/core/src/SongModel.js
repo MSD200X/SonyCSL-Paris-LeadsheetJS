@@ -4,8 +4,9 @@ define([
 	'modules/core/src/BarManager',
 	'modules/core/src/ChordManager',
 	'modules/core/src/TimeSignatureModel',
-	'modules/core/src/SongBarsIterator'
-], function($, NoteManager, BarManager, ChordManager, TimeSignatureModel, SongBarsIterator) {
+	'modules/core/src/SongBarsIterator',
+	'modules/Unfold/src/LeadsheetStructure'
+], function($, NoteManager, BarManager, ChordManager, TimeSignatureModel, SongBarsIterator, LeadsheetStructure) {
 	/**
 	 * SongModel is the main model to represent song, it contains notes, chords and bars components, also contain section, composer name etc.
 	 * @exports core/SongModel
@@ -28,6 +29,7 @@ define([
 
 		this.addComponent('notes', new NoteManager());
 		this.addComponent('bars', new BarManager());
+		this.addComponent('chords', new ChordManager());
 	};
 
 	///////////////////////////////
@@ -57,14 +59,7 @@ define([
 		}
 		return false;
 	};
-	/*SongModel.prototype.clearComposers = function(composer) {
-		if (typeof composer !== "undefined") {
-			this.composers = [];
-			return true;
-		}
-		return false;
-	};*/
-
+	
 	SongModel.prototype.getStyle = function() {
 		return this.style;
 	};
@@ -109,7 +104,6 @@ define([
 	SongModel.prototype.getTonality = function() {
 		return this.tonality;
 	};
-
 	/**
 	 * Get the tonality of a bar by looping for each previous bar or by default on song tonality 
 	 * (not called for the moment)
@@ -133,7 +127,6 @@ define([
 	SongModel.prototype.getTimeSignature = function() {
 		return this.timeSignature;
 	};
-
 	/*
 	 * GetTimeSignatureAt returns the time signature at one precise moment defined by the barNumber. 
 	 * It should not be used inside a loop iterating bars, SongBarsIterator should be used instead in that case
@@ -145,7 +138,6 @@ define([
 		barsIt.setBarIndex(barNumber);
 		return barsIt.getBarTimeSignature();
 	};
-
 	/**
 	 * @param  {Integer} index  index of the section
 	 * @return {SectionModel}
@@ -177,7 +169,6 @@ define([
 		}
 		this.sections.splice(sectionIndex, 1);
 	};
-
 	/**
 	 * gets component (either chords or notes)
 	 * @param  {String} componentTitle must be "chords" or "notes" or "bars"
@@ -195,7 +186,6 @@ define([
 		this.components[componentTitle] = componentItem;
 		return true;
 	};
-
 	/**
 	 * Function has to be called inside an iteration, it checks if there is a timesignature change in current bar
 	 * if not, it returns the currentBeats (calculated previously and sent as parameter)
@@ -215,89 +205,8 @@ define([
 
 		return (barTimeSig) ? barTimeSig.getQuarterBeats() : currentBeats;
 	};
-
 	/**
-	 * get component using unfolded song structure
-	 * @param  {String} componentTitle must be "chords" or "notes"
-	 * @return {array} array of component (noteModel, chordModel)
-	 */
-	SongModel.prototype.getUnfoldedSongComponents = function(componentTitle) {
-		var song = [];
-		if (typeof componentTitle === "undefined") {
-			componentTitle = undefined;
-		}
-		var barsIndex = this.getUnfoldedSongStructure();
-		for (var i = 0; i < barsIndex.length; i++) {
-			song.push(this.getComponentsAtBarNumber(barsIndex[i], componentTitle));
-		}
-		return song;
-	};
-
-	/**
-	 * Returns an array of index of bars when song if unfolded.
-	 * like getUnfoldedSongSection() but for the whole song
-	 * @return {array}
-	 */
-	SongModel.prototype.getUnfoldedSongStructure = function() {
-		var pointerBarNumberStructure = [];
-		for (var i = 0, c = this.getSections().length; i < c; i++) {
-			pointerBarNumberStructure = pointerBarNumberStructure.concat(this.getUnfoldedSongSection(i));
-		}
-		return pointerBarNumberStructure;
-	};
-
-	/**
-	 * Returns an array containing index of bars in an unfolded song
-	 *	e.g.: [	0, 1, 2, 3, 4, 5, 6, 7,
-	 *			0, 1, 2, 3, 4, 5, 8, 9]
-	 * @return {array}
-	 */
-	SongModel.prototype.getUnfoldedSongSection = function(sectionNumber) {
-		if (typeof sectionNumber !== "undefined" && !isNaN(sectionNumber)) {
-			var bm = this.getComponent("bars");
-			var section = this.getSection(sectionNumber);
-			var repeat = section.getRepeatTimes();
-			var whileSecurity = 0;
-			var startBar, endBar;
-			var currentRepeatedPart = 0;
-			var repeatedPart = [];
-			var pointerBarNumberStructure = [];
-			var endingBar;
-			var endingChanged = false;
-			while (repeat >= 0 || whileSecurity > 1000) {
-				whileSecurity++;
-				// looping in all sections repeat
-				repeatedPart = [];
-				currentRepeatedPart = 0;
-				startBar = this.getStartBarNumberFromSectionNumber(sectionNumber);
-				endBar = startBar + section.getNumberOfBars();
-				for (var barNumber = startBar; barNumber < endBar; barNumber++) {
-					endingBar = parseInt(bm.getBar(barNumber).getEnding(), 10);
-					// case there is an ending
-					if (!isNaN(endingBar) && endingBar > 0 && currentRepeatedPart !== endingBar) {
-						endingChanged = true;
-						currentRepeatedPart = endingBar;
-						repeat--;
-					}
-					// case there is no ending found yet, we save this part
-					if (currentRepeatedPart === 0) {
-						repeatedPart.push(barNumber);
-					}
-					// case there is an ending, we add saved part to begining
-					if (!isNaN(endingBar) && endingBar > 1 && endingChanged) {
-						endingChanged = false;
-						pointerBarNumberStructure = pointerBarNumberStructure.concat(repeatedPart);
-					}
-					pointerBarNumberStructure.push(barNumber);
-				}
-				repeat--;
-			}
-			return pointerBarNumberStructure;
-		}
-	};
-
-	/**
-	 * Function return the start bar number of any section, first bar is 0
+	 * returns the start bar number of any section, first bar is 0
 	 * @param  {int} sectionNumber
 	 * @return {int} start Bar Number of section
 	 */
@@ -311,7 +220,6 @@ define([
 		}
 		return barNumber;
 	};
-
 	/**
 	 * Returns the section number in which the bar is
 	 * @param  {int} barNumber
@@ -331,7 +239,6 @@ define([
 		}
 		return undefined;
 	};
-
 	/**
 	 * Function return the number of beat before a bar number in a folded song
 	 * @param  {int} barNumber is the number of bar you want to have the first beat
@@ -358,7 +265,6 @@ define([
 		}
 		return barNumber;
 	};
-
 	/**
 	 * Compute song length in beats
 	 * @return {int} length of the song in beats
@@ -379,7 +285,6 @@ define([
 		}
 		return numberOfBeats;
 	};
-
 	/**
 	 * Returns all components in a given bar number, componentTitle attriubtes is a filter for component title (eg chords, notes...)
 	 * @param  {int} barNumber
@@ -407,7 +312,6 @@ define([
 		}
 		return components;
 	};
-
 	/**
 	 * gets divisions between beats depending on bars. Useful when filling gaps with silences in noteManager within several bars
 	 * @param  {Integer} startBeat 
@@ -450,132 +354,81 @@ define([
 		}
 		return divisions;
 	};
-
 	/**
 	 * Alias for init function, it can be more adapted to some situations
 	 */
 	SongModel.prototype.clear = function() {
 		this.init();
 	};
-
+	/**
+	 * Clones SongModel object and its components, but not the content of components (arrays of bars, chords and notes)
+	 * Clone is for the moment used together with the unfold function, which clones the content components while unfolding
+	 * @return {SongModel}
+	 */
 	SongModel.prototype.clone = function() {
 		var songModelCloned = $.extend(true, new SongModel(), this);
+		var barMng = new BarManager();
+		var chordMng = new ChordManager();
+		var noteMng = new NoteManager();
+		
+		barMng.setBars(this.getComponent('bars').getBars());
+		chordMng.setAllChords(this.getComponent('chords').getChords());
+		noteMng.setNotes(this.getComponent('notes').getNotes());
+
+		songModelCloned.components.bars = barMng;
+		songModelCloned.components.notes = noteMng;
+		songModelCloned.components.chords = chordMng;
+
 		return songModelCloned;
 	};
-
+	SongModel.prototype.setStructure = function(leadsheetStructure) {
+		this.structure = leadsheetStructure;
+	};
+	SongModel.prototype.getStructure = function() {
+		return this.structure;
+	};
 	/**
-	 * Function test if unfolding system can be call
-	 * @return {Boolean} indicate if it can be unfolded or not
+	 * If there are bars with only one whole rest (very few cases), we set their real duration, which depends on the time signature bar
 	 */
-	SongModel.prototype.canBeUnfold = function() {
-		var bm = this.getComponent("bars");
-		var barNumber = bm.getTotal();
-		var currentBar;
-		for (var i = 0; i < barNumber; i++) {
-			currentBar = bm.getBar(i);
-			var currentLabel = currentBar.getLabel();
-			var currentSublabel = currentBar.getSublabel();
-			if ((typeof currentLabel !== "undefined" && currentLabel !== "") || (typeof currentSublabel !== "undefined" && currentSublabel !== "")) {
-				return false;
-			}
+	SongModel.prototype.updateNotesBarDuration = function() {
+		/**
+			function already defined in noteManager, it should be used in an 'utils' mod
+		*/
+		function roundBeat (beat) {
+			return Math.round(beat * 1000000) / 1000000;
 		}
-		return true;
+		var songIt = new SongBarsIterator(this),
+			notes = this.getComponent('notes').getNotes(),
+			currentBarNumBeats = songIt.getBarTimeSignature().getQuarterBeats(),
+			notesBarDur = 0;
+		
+		var i = 0;
+		while (songIt.hasNext() && i < notes.length){
+		
+			// if it's first note, and duration depends on bar (only whole notes can have durationDependsOnBar = true)
+			if (notesBarDur === 0 && notes[i].durationDependsOnBar){
+				notes[i].barDuration = currentBarNumBeats;
+			}
+
+			notesBarDur += notes[i].getDuration();
+			if (roundBeat(notesBarDur) > currentBarNumBeats){
+				console.warn("note exceeds bar duration (index "+ i +") bar "+songIt.getBarIndex());
+			}
+			else if (roundBeat(notesBarDur) === currentBarNumBeats ){
+				notesBarDur = 0;
+				songIt.next();	
+				if (songIt.hasNext()){
+					currentBarNumBeats = songIt.getBarTimeSignature().getQuarterBeats();	
+				}
+			}
+			i++;
+		}
 	};
 
-	/**
-	 * Unfold the current songModel and return it
-	 * Be carefull, segno and coda are not yet supported, you can call canBeUnfold function to test if songModel is supported
-	 * If you need a new version of the song unfolded use songModel.clone before
-	 * @return {SongModel} current unfolded songmodel
-	 */
 	SongModel.prototype.unfold = function() {
-
-		function getUnfoldedNotes(oldSong) {
-			var barNotes = oldSong.getUnfoldedSongComponents("notes");
-			var newNoteMng = new NoteManager();
-			for (var i in barNotes) {
-				newNoteMng.addNotes(barNotes[i]);
-			}
-			return newNoteMng.getNotes();
-		}
-
-		function getUnfoldedChords(oldSong) {
-			var newChords = [];
-			var chord;
-			var barChords = oldSong.getUnfoldedSongComponents("chords");
-			for (var i in barChords) {
-				for (var j in barChords[i]) {
-					chord = barChords[i][j].clone();
-					chord.setBarNumber(i);
-					newChords.push(chord);
-				}
-			}
-			return newChords;
-		}
-
-		function getUnfoldedSectionsAndBars(oldSong) {
-			var i, c, j,
-				section,
-				pointerBarNumberStructure,
-				newSections = [],
-				newBars = [],
-				barMng = oldSong.getComponent("bars");
-
-			for (i = 0, c = oldSong.getSections().length; i < c; i++) {
-				section = oldSong.getSection(i);
-				pointerBarNumberStructure = oldSong.getUnfoldedSongSection(i);
-				newSections.push(
-					section.cloneUnfolded(pointerBarNumberStructure.length)
-				);
-
-				for (j = 0; j < pointerBarNumberStructure.length; j++) {
-					newBars.push(
-						barMng.getBar(pointerBarNumberStructure[j]).clone(true)
-					);
-				}
-			}
-			return {
-				newBars: newBars,
-				newSections: newSections
-			};
-		}
-
-		var oldSong = this.clone();
-		// Copy basic song data.
-		this.clear();
-		this.setTitle(oldSong.getTitle());
-		this.composers = oldSong.composers;
-		this.setStyle(oldSong.getStyle());
-		this.setSource(oldSong.getSource());
-		this.setTempo(oldSong.getTempo());
-		this.setTonality(oldSong.getTonality());
-		this.setTimeSignature(oldSong.getTimeSignature().toString());
-
-
-		// BARS and SECTIONS
-		var r = getUnfoldedSectionsAndBars(oldSong);
-
-		var barMng = new BarManager();
-		barMng.setBars(r.newBars);
-
-		this.sections = [];
-		for (var i in r.newSections) {
-			this.addSection(r.newSections[i]);
-		}
-
-		//NOTES
-		var noteMng = new NoteManager();
-		noteMng.setNotes(getUnfoldedNotes(oldSong));
-
-		//CHORDS
-		var chordMng = new ChordManager();
-		chordMng.setAllChords(getUnfoldedChords(oldSong));
-
-		this.addComponent('notes', noteMng);
-		this.addComponent('chords', chordMng);
-		this.addComponent('bars', barMng);
-
-		return this;
+		var struct = new LeadsheetStructure(this);
+		var segments = struct.getSegments();
+		struct.setUnfoldedLeadsheet(segments);
 	};
 
 	return SongModel;

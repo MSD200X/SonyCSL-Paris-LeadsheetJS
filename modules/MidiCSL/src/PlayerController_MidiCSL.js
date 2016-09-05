@@ -163,7 +163,7 @@ define([
 	 * Function is called to load the state of the player
 	 */
 	PlayerController.prototype.initView = function() {
-		$.publish('PlayerModel-onvolumechange', this.model.getMelodyVolume());
+		$.publish('PlayerModel-onvolumechange', this.model.melody.volume);
 	};
 
 	return PlayerController;

@@ -190,7 +190,6 @@ define(['modules/StructureEdition/src/StructureEditionController',
 					var barMng = simpleSong.getComponent('bars');
 					var noteMng = simpleSong.getComponent('notes');
 
-
 					cursor.setPos(5); //set cursor in first note of 2nd bar
 					assert.equal(noteMng.getNotes(5, 9), "A/4-q,F/4-q,G/4-q,E/4-q");
 					assert.equal(barMng.getTotal(), 8);

@@ -64,12 +64,12 @@ define(['utils/NoteUtils',
 		});
 
 		$(document).keydown(function(evt) {
+
 			var keyCode = (evt === null) ? event.keyCode : evt.keyCode;
 			var key = String.fromCharCode(keyCode).toLowerCase();
 			var ctrlMetaKey = !!(evt.metaKey || evt.ctrlKey);
 			// console.log("metaKey");
 			// console.log(metaKey);
-
 			var d = evt.srcElement || evt.target;
 			var ACC_KEYS = {
 				"s": "#",
@@ -118,6 +118,8 @@ define(['utils/NoteUtils',
 					}
 				} else if (keyCode == 82) { // R
 					publish('R-key', evt);
+				} else if (keyCode == 85) { // U **just to test unfolding
+					publish('U-key', evt); 
 				}else if (keyCode == 75) { // R
 					publish('K-key', evt);
 				} else if (keyCode == 46 || keyCode == 8) { //supr

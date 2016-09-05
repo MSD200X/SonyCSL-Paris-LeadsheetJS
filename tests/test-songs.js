@@ -3449,7 +3449,7 @@ define(function() {
 	                "tie": "start"
 	            }]
 	        }, {
-	            "ending": "2",
+	            "ending": "1",
 	            "chords": [{
 	                "p": "Eb",
 	                "ch": "M7",
@@ -3521,7 +3521,7 @@ define(function() {
 	                "tie": "start"
 	            }]
 	        }, {
-	            "ending": "2",
+	            "ending": "3",
 	            "chords": [{
 	                "p": "Db",
 	                "ch": "M7",
@@ -3534,7 +3534,7 @@ define(function() {
 	                "tie": "stop"
 	            }]
 	        }, {
-	            "ending": "2",
+	            "ending": "4",
 	            "chords": [{
 	                "p": "D",
 	                "ch": "halfdim7",

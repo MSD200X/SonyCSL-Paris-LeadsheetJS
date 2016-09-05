@@ -16,9 +16,10 @@ define([
 	'modules/core/src/Intervals',
 	'modules/core/src/Note',
 	'modules/core/src/PitchClass',
+	'modules/Unfold/src/UnfoldingManager',
 	'pubsub',
 ], function($, Mustache, EditionControllerInterface, CursorModel, SongModel, SectionModel, NoteManager, NoteModel, SongBarsIterator, TimeSignatureModel, SongConverterMidi_MidiCSL, NoteUtils, 
-			UserLog, Midi, Intervals, Note, PitchClass, pubsub) {
+			UserLog, Midi, Intervals, Note, PitchClass, UnfoldingManager, pubsub) {
 	/**
 	 * StructureEditionController manages all structure edition function
 	 * @exports StructureEdition/StructureEditionController
@@ -472,20 +473,23 @@ define([
 		}
 		return selectedBars;
 	};
+	
 
 	StructureEditionController.prototype.unfold = function(force) {
 		var unfold = true;
-		if (typeof force === "undefined" || force === false) {
+		if (!force) {
 			unfold = !this.structEditionModel.unfolded;
 		}
 		if (unfold) {
-			this.oldSong = this.songModel;
-			var newSongModel = this.songModel.unfold();
-			this.songModel = newSongModel;
-			$.publish('ToViewer-draw', this.songModel);
-		} else {
-			$.publish('ToViewer-draw', this.oldSong);
+			this.foldedComponents = UnfoldingManager.getComponents(this.songModel);
+			this.songModel.unfold();
 		}
+		else{
+			UnfoldingManager.restoreComponents(this.songModel, this.foldedComponents);
+		}
+
+		$.publish('ToViewer-draw', [this.songModel, true]);
+		
 		this.structEditionModel.toggleUnfolded();
 		$.publish('ToLayers-removeLayer');
 	};

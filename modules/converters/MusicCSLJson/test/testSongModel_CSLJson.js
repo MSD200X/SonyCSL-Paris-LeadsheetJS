@@ -2,9 +2,10 @@ define([
 	'modules/converters/MusicCSLJson/src/SongModel_CSLJson', 
 	'modules/core/src/SongModel', 
 	'tests/test-songs',
-	'tests/songs/IMeanYou'
+	'tests/songs/IMeanYou',
+	'tests/songs/unfold/DylansDelight'
 
-	], function(SongModel_CSLJson, SongModel, testSongs, IMeanYou) {
+	], function(SongModel_CSLJson, SongModel, testSongs, IMeanYou, DylansDelight) {
 	return {
 		run: function() {
 			test("SongModel_CSLJson", function(assert) {
@@ -74,12 +75,10 @@ define([
 				var song2 = SongModel_CSLJson.importFromMusicCSLJSON(someBarsWithNoMelody);
 				var noteMng = song2.getComponent('notes');
 			
-
 				assert.equal(noteMng.getNotesAtBarNumber(0,song2).length, 1, 'one note in first bar');
 				assert.equal(noteMng.getNotesAtBarNumber(3,song2).length, 1, 'whole notes in last three bars have been added (as they had originally no melody in the json');
 				assert.equal(noteMng.getNotesAtBarNumber(4,song2).length, 1);
-				assert.equal(noteMng.getNotesAtBarNumber(5,song2).length, 1);
-
+				assert.equal(noteMng.getNotesAtBarNumber(5,song2).length, 1);				
 				
 			});
 		}

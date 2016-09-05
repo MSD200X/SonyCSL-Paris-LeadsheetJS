@@ -19,7 +19,7 @@ define(['vexflow'], function(Vex) {
 			this.vexflowStave.addClef("treble").setContext(ctx).draw();
 		}
 		//name section
-		if (sectionIt.getBarIndex() === 0) {
+		if (sectionIt.getBarIndex() === 0 && sectionIt.getSection().displayName) {
 			var nameSection = sectionIt.getSection().getName();
 			var repeatSection = parseInt(sectionIt.getSection().getRepeatTimes(), 10) + 1;
 			var textRepeatSection = '';

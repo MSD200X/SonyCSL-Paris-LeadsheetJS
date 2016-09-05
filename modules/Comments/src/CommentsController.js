@@ -92,7 +92,8 @@ define([
 				}
 				if (SCORE){
 					handleScoreComments();
-					$.subscribe('LSViewer-drawEnd', handleScoreComments);
+					// TODO find a better way to redraw comments
+					// $.subscribe('LSViewer-drawEnd', handleScoreComments);
 				}
 				enabled = !enabled;
 			}
@@ -125,7 +126,8 @@ define([
 			}
 			//ScoreComments
 			if (SCORE){
-				$.subscribe('LSViewer-drawEnd', handleScoreComments);
+				// TODO find a better way to redraw comments
+				// $.subscribe('LSViewer-drawEnd', handleScoreComments);
 			}
 			//comments are activated by K-key
 			$.subscribe('K-key', function(el){
@@ -197,7 +199,7 @@ define([
 		}
 		return {
 			addComment: addComment
-		}
+		};
 	}
 	return CommentsController;
 });

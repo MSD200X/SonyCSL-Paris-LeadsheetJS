@@ -7,19 +7,21 @@ define(function(){
 	 * @param {CursorModel} notesCursor 
 	 */
 	function NotesCursorUpdater(song, notesCursor){
-		this.song = song;
+		// this.song = song;
+		this.unfoldedSong = song.clone();
+		this.unfoldedSong.unfold();
 		this.notesCursor = notesCursor;
 		this.prevINote = 0;
+		this.noteMng = this.unfoldedSong.getComponent('notes');
 	}
 
 	NotesCursorUpdater.prototype.update = function(audio) {
-		var currTime = audio.getCurrentTime();
-		var noteMng = this.song.getComponent('notes');
-		var iNote = noteMng.getPrevIndexNoteByBeat(currTime / audio.beatDuration + 1);
-		if (iNote != this.prevINote && iNote < this.notesCursor.getListLength()){
-			this.notesCursor.setPos(iNote);	
+		var iNote = this.noteMng.getPrevIndexNoteByBeat(audio.getCurrentTime() / audio.beatDuration + 1);
+		if (iNote != this.prevINote){
+			var foldedIdx = this.unfoldedSong.notesMapper.getFoldedIdx(iNote);
+			this.notesCursor.setPos(foldedIdx);	
 			this.prevINote = iNote;
-		}	
+		}
 	};
 	return NotesCursorUpdater;
 });

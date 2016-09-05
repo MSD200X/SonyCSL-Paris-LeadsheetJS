@@ -1,5 +1,4 @@
 define([
-	'modules/core/src/SongModel',
 	'modules/core/src/ChordModel',
 	'modules/ChordEdition/src/ChordSpaceView',
 	'modules/Cursor/src/CursorModel',
@@ -8,7 +7,7 @@ define([
 	'modules/Edition/src/ElementManager',
 	'jquery',
 	'pubsub'
-], function(SongModel, ChordModel, ChordSpaceView, CursorModel, ChordModel_CSLJson, UserLog, ElementManager, $, pubsub) {
+], function(ChordModel, ChordSpaceView, CursorModel, ChordModel_CSLJson, UserLog, ElementManager, $, pubsub) {
 	/**
 	 * ChordSpaceManager creates and manages an array of chord space which is represented as a rectangle on each beat on top of bars
 	 * @param {SongModel}  songModel         

@@ -149,10 +149,13 @@ define([
 					throw "Need songModel to draw";
 				}
 				var width = self._getWidthFromContainer(this.divContainer);
-				self.canvas.width = width;
-				self._resize(width);
-				self.forceNewCanvasLayer = true;
-				self.draw(songModel);
+				if (self.canvas.width !== width) {
+					console.log('resize!!!!')
+					self.canvas.width = width;
+					self._resize(width);
+					self.forceNewCanvasLayer = true;
+					self.draw(songModel);
+				}
 			});
 		};
 		LSViewer.prototype._resize = function(width) {
@@ -390,7 +393,7 @@ define([
 					}
 					//BARS
 					barDimensions = self.barWidthMng.getDimensions(songIt.getBarIndex());
-					symbolsPositions = symbolsPositioner.getPositionsForBarIndex(songIt.getBarIndex());
+					var symbolsPositions = symbolsPositioner.getPositionsForBarIndex(songIt.getBarIndex());
 					var barViewParams = {
 						draw_clef: self.DRAW_CLEF,
 						draw_key_signature: self.DRAW_KEY_SIGNATURE,

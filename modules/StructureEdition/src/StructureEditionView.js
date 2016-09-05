@@ -107,12 +107,16 @@ define([
 		$('#unfold').click(function() {
 			$.publish('StructureEditionView', 'unfold');
 		});
+		$.subscribe('U-key', function() {
+			$.publish('StructureEditionView','unfold')
+		});
 
 		$('#leadsheet_transpose').change(function() {
 			var semiTons = Number($(this).val());
 			fn = 'transposeSong';
 			$.publish('StructureEditionView', [fn, semiTons]);
 		});
+
 
 	};
 

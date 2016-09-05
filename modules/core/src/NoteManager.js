@@ -205,7 +205,25 @@ define([
 		songIt.setBarIndex(barNumber);
 		return this.getNotesAtCurrentBar(songIt);
 	};
-
+	/**
+	 * Clones notes at a given bar number
+	 * @param  {Number} barNumber 
+	 * @param  {SongModel} song      
+	 * @return {Object} 	{
+	 *         					notes: {Array of NoteModels}, 
+	 *                          idxs: [idxStart, idxEnd] 
+	 *                      }
+	 */
+	NoteManager.prototype.cloneNotesAtBarNumber = function(barNumber, song) {
+		var songIt = new SongBarsIterator(song);
+		songIt.setBarIndex(barNumber);
+		var beatIntervals = songIt.getStartEndBeats();
+		var idxs = this.getIndexesStartingBetweenBeatInterval(beatIntervals[0], beatIntervals[1]);
+		return {
+			notes: this.cloneElems(idxs[0], idxs[1]),
+			idxs: idxs
+		};
+	};
 	NoteManager.prototype.getNoteBeatInBarNumber = function(noteNumber, barNumber, song) {
 		var songIt = new SongBarsIterator(song);
 		songIt.setBarIndex(barNumber);
@@ -309,8 +327,19 @@ define([
 		return newNoteMng;
 
 	};
-
-
+	/**
+	 * checks if there are whole rests, used to update durations (to cover the case where there is a lonely whole rest note in a bar: note's duration is the bar duration)
+	 * @return {Boolean}                
+	 */
+	NoteManager.prototype.containsWholeRests = function() {
+		for (var i = 0; i < this.notes.length; i++) {
+			var note = this.notes[i];
+			if (note.isRest && note.duration === "w"){
+				return true;
+			}
+		}
+		return false;
+	};
 	NoteManager.prototype._getNotesIteratorAt = function(index, song) {
 		if (isNaN(index) || index < 0 || song === undefined) {
 			throw "NoteManager - getNoteBarNumber - attributes are not what expected, song: " + song + ", index: " + index;
@@ -446,6 +475,15 @@ define([
 		return [index1, index2];
 	};
 
+	NoteManager.prototype.getStartTieNotePos = function(pos) {
+		while (pos !== 0 &&
+			(this.notes[pos].getTie() === 'stop' || this.notes[pos].getTie() ==='stop_start' ||  //current pos is in tie but not start
+			this.notes[pos - 1].getTie() ==='stop_start' || this.notes[pos - 1].getTie() ==='start')) //previous pos is in tie but or start (this handles cases where there is a tie start and following note has no tie stopm we assume it should)
+		{
+			pos--;
+		}
+		return pos;
+	};
 
 	/**
 	 *

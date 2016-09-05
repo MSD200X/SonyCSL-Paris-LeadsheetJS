@@ -137,11 +137,13 @@ define(
 		}
 
 		if (useAudio) {
-			$.publish('ToMidiPlayer-disable');
 			var audioModule = new AudioModule(songModel, 
 			{
 				viewer: viewer,
-				notesCursor: snglPlayerCursor.getInstance()
+				notesCursor: snglPlayerCursor.getInstance(),
+				audioAnimation: playerViewOptions.audioAnimation,
+				audioDrawer: playerViewOptions.audioDrawer,
+				playerView: playerView
 			});
 			if (options.audio.audioFile) {
 				audioModule.load(options.audio.audioFile, options.audio.tempo);
@@ -230,7 +232,7 @@ define(
 		if (MusicCSLJSON === undefined) {
 			throw "missing MusicCLJSON song";
 		}
-		
+		LJS.utils.AjaxUtils.setDefaultDomain(params.defaultDomain);
 		var useViewer = params.viewer !== undefined;
 		var usePlayer = params.player !== undefined;
 		var useEdition = params.edition !== undefined;
