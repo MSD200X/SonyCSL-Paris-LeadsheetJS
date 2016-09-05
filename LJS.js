@@ -137,7 +137,6 @@ define(
 		}
 
 		if (useAudio) {
-			$.publish('ToMidiPlayer-disable');
 			var audioModule = new AudioModule(songModel, 
 			{
 				viewer: viewer,
