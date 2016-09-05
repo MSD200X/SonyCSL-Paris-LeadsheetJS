@@ -137,7 +137,6 @@ define([
 		LSViewer.prototype._initSubscribe = function() {
 			var self = this;
 			$.subscribe('ToViewer-draw', function(el, songModel, forceNewCanvasLayer) {
-				console.log('draw');
 				if (!songModel) {
 					throw "Need songModel to draw";
 				}

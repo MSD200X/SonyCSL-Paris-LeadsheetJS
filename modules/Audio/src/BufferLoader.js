@@ -17,7 +17,7 @@ define([],
       var loader = this;
 
       var _callOnLoad = function() {
-        if (++loader.loadCount == loader.urlList.length) {
+        if (++loader.loadCount === loader.urlList.length) {
             loader.onload();
         }
       };
@@ -28,7 +28,7 @@ define([],
           request.response,
           function(buffer) {
             if (!buffer) {
-              alert('error decoding file data: ' + url);
+              console.error('error decoding file data: ' + url);
               return;
             }
             loader.bufferList[index] = buffer;
