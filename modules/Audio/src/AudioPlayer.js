@@ -29,32 +29,33 @@ define(
 					self.$tplRendered = false;
 				}
 				self.gains = self.audio.getGainsForTracks();
-				var tracks = [];
-				// console.log(self.audio.sources)
-				_.forEach(self.gains, function(gain, index) {
-					tracks.push({
-						name: self.audio.sources[index].name,
-						index: index,
-						gain: (self.audio.sources[index].gain !== undefined ? self.audio.sources[index].gain : self.defaultGainValue),
-						minValue: self.muteValue
+				if (self.gains.length > 0) {
+					var tracks = [];
+					_.forEach(self.gains, function(gain, index) {
+						tracks.push({
+							name: self.audio.sources[index].name,
+							index: index,
+							gain: (self.audio.sources[index].gain !== undefined ? self.audio.sources[index].gain : self.defaultGainValue),
+							minValue: self.muteValue
+						});
+						if (_.isUndefined(self.audio.sources[index].gain)) {
+							self.audio.sources[index].gain = self.defaultGainValue;
+						}
 					});
-					if (_.isUndefined(self.audio.sources[index].gain)) {
-						self.audio.sources[index].gain = self.defaultGainValue;
-					}
-				});
-				self.$tplRendered = $(Mustache.render(
-					MultitrackMixerTemplate,
-					{
-						tracks: tracks,
-					}
-				));
-				self.$tplRendered.find('input[type=range]').change(function(){
-					var gainIdx = parseInt($(this).attr('id').split('-')[2], 10);
-					var newVolume = $(this).val();
-					self._setGainValue(newVolume, self.gains[gainIdx], self.audio.sources[gainIdx]);
-				}).change();
-				$('body').append(self.$tplRendered);
-				$.publish("Audioplayer-multitrackMixerInserted", {$element: self.$tplRendered});
+					self.$tplRendered = $(Mustache.render(
+						MultitrackMixerTemplate,
+						{
+							tracks: tracks,
+						}
+					));
+					self.$tplRendered.find('input[type=range]').change(function(){
+						var gainIdx = parseInt($(this).attr('id').split('-')[2], 10);
+						var newVolume = $(this).val();
+						self._setGainValue(newVolume, self.gains[gainIdx], self.audio.sources[gainIdx]);
+					}).change();
+					$('body').append(self.$tplRendered);
+					$.publish("Audioplayer-multitrackMixerInserted", {$element: self.$tplRendered});
+				}
 			});
 			$.subscribe("AudioCursor-clickedAudio", function(el, posCursor) {
 				self.startPos = posCursor;

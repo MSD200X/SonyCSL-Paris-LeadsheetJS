@@ -110,6 +110,7 @@ define([
 				$.publish('ToMidiPlayer-disable');
 				$.publish('ToAudioPlayer-enable');
 			}
+			self.setPlayer($(this).val());
 		});
 
 		$('#volume_controller').change(self.updateVolume);
@@ -135,7 +136,9 @@ define([
 	PlayerView.prototype.setPlayer = function(type) {
 		if (type === 'midi') {
 			this.midiPlayer = true;
+			this.audioPlayer = false;
 		} else { //type === 'audio'
+			this.midiPlayer = false;
 			this.audioPlayer = true;
 		}
 	};
@@ -162,6 +165,7 @@ define([
 	PlayerView.prototype.initSubscribe = function() {
 		var self = this;
 		$.subscribe('PlayerModel-onplay', function(el) {
+			self.disableMidi.apply(self);
 			self.play();
 		});
 		$.subscribe('PlayerModel-onpause', function(el) {
@@ -188,13 +192,14 @@ define([
 
 		$.subscribe('PlayerModel-onload', function(el, type) {
 			self.setPlayer(type);
-			self.updateSwitch();
+			self.updateSwitch(type);
 			self.playerIsReady();
 		});
 		$.subscribe('Audio-disabled', function() {
 			self.setPlayer('midi');
 			self.unsetPlayer('audio');
-			self.updateSwitch();
+			self.updateSwitch('midi');
+			$.publish('ToMidiPlayer-enable');
 		});
 		$.subscribe('ToAudioPlayer-disable',function(){
 			$("input[name=typeSwitch][value=midi]").prop("checked",true);
@@ -352,18 +357,11 @@ define([
 			top: (relativePosition - middleController) + 'px'
 		});
 	};
-	PlayerView.prototype.updateSwitch = function() {
+	PlayerView.prototype.updateSwitch = function(type) {
 		var typeSwitch = $("#type_button_container");
-		var visible = (typeSwitch.css('display') !== 'none');
-
-		if (this.midiPlayer && this.audioPlayer) {
-			if (!visible) {
-				typeSwitch.show();
-			}
-			$("input[name=typeSwitch][value=audio]").prop("checked", true);
-		} else {
-			typeSwitch.hide();
-		}
+		typeSwitch.show();
+		$("input[name=typeSwitch][value='" + type + "']").prop("checked", true);
+		$("input[name=typeSwitch]").not("[value='" + type + "']").prop("checked", false);
 	};
 
 	PlayerView.prototype.hide = function() {

@@ -60,6 +60,7 @@ define(
 					self.createSourcesFromBuffers.apply(self);
 				}
 			);
+			$.publish('Audio-disabled');
 			self.bufferLoader.load();
 		};
 
@@ -117,7 +118,7 @@ define(
 		};
 
 		AudioController.prototype.play = function(pos) {
-			if (this.isPlaying || !this.isEnabled) return;
+			if (this.isPlaying || !this.isEnabled || this.sources.length === 0) return;
 			if (this.reloadSources) {
 				this.createSourcesFromBuffers.apply(this);
 			}
