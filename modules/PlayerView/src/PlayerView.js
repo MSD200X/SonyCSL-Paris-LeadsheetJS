@@ -58,9 +58,11 @@ define([
 			$.publish('ToPlayer-play', tempo);
 		});
 		$('#stop_button').click(function() {
+			self.disableMidi.apply(self);
 			$.publish('ToPlayer-stop');
 		});
 		$('#pause_button').click(function() {
+			self.disableMidi.apply(self);
 			$.publish('ToPlayer-pause');
 		});
 
@@ -124,6 +126,12 @@ define([
 			e.preventDefault();
 		});
 	};
+	PlayerView.prototype.disableMidi = function() {
+		if (this.midiPlayer === false) {
+			$.publish('ToMidiPlayer-disable');
+		}
+	};
+
 	PlayerView.prototype.setPlayer = function(type) {
 		if (type === 'midi') {
 			this.midiPlayer = true;
