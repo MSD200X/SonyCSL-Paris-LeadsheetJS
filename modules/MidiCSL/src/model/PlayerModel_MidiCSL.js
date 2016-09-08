@@ -434,18 +434,17 @@ define([
 		};
 
 		PlayerModel_MidiCSL.prototype.stopAllNotes = function() {
-			if (this.playState) {
-				if (typeof MIDI.stopAllNotes !== "undefined") {
-					try {
-						MIDI.stopAllNotes();
-					} catch (e) {
-						console.log(e);
-					}
-				}
-				for (var i in this.noteTimeOut) {
-					window.clearTimeout(this.noteTimeOut[i]);
+			if (typeof MIDI.stopAllNotes !== "undefined") {
+				try {
+					MIDI.stopAllNotes();
+				} catch (e) {
+					console.log(e);
 				}
 			}
+			for (var i in this.noteTimeOut) {
+				window.clearTimeout(this.noteTimeOut[i]);
+			}
+			this.noteTimeOut = [];
 		};
 
 		PlayerModel_MidiCSL.prototype.emptyPlayNotes = function() {

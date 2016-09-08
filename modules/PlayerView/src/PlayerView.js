@@ -58,11 +58,11 @@ define([
 			$.publish('ToPlayer-play', tempo);
 		});
 		$('#stop_button').click(function() {
-			self.disableMidi.apply(self);
+			self.disablePlayer.apply(self);
 			$.publish('ToPlayer-stop');
 		});
 		$('#pause_button').click(function() {
-			self.disableMidi.apply(self);
+			self.disablePlayer.apply(self);
 			$.publish('ToPlayer-pause');
 		});
 
@@ -127,9 +127,12 @@ define([
 			e.preventDefault();
 		});
 	};
-	PlayerView.prototype.disableMidi = function() {
+	PlayerView.prototype.disablePlayer = function() {
 		if (this.midiPlayer === false) {
 			$.publish('ToMidiPlayer-disable');
+		}
+		if (this.audioPlayer === false) {
+			$.publish('ToAudioPlayer-disable');
 		}
 	};
 
@@ -165,7 +168,7 @@ define([
 	PlayerView.prototype.initSubscribe = function() {
 		var self = this;
 		$.subscribe('PlayerModel-onplay', function(el) {
-			self.disableMidi.apply(self);
+			self.disablePlayer.apply(self);
 			self.play();
 		});
 		$.subscribe('PlayerModel-onpause', function(el) {
