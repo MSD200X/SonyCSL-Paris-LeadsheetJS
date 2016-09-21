@@ -34,7 +34,7 @@ define([
 		var audioDrawer = params.audio && params.audio.drawer ? params.audio.drawer : undefined;
 
 		var model = new CommentsModel(serverComments);
-		var view = new CommentsView(params.viewer, params.song, audioDrawer, params.noteSpaceManager, params.notesCursor, params.chordsEditor );
+		var view = new CommentsView(params.viewer, params.song, audioDrawer, params.noteSpaceManager, params.notesCursor, params.chordsEditor);
 		var song = params.song;
 		var user = params.userSession;
 		var commentsShowingBubble = [];
@@ -127,7 +127,7 @@ define([
 			//ScoreComments
 			if (SCORE){
 				// TODO find a better way to redraw comments
-				// $.subscribe('LSViewer-drawEnd', handleScoreComments);
+				$.subscribe('LSViewer-drawEnd', handleScoreComments);
 			}
 			//comments are activated by K-key
 			$.subscribe('K-key', function(el){

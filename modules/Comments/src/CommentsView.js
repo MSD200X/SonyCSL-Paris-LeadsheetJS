@@ -16,7 +16,6 @@ define([
 	function CommentsView(viewer, song, audioCursor, noteSpaceMng, notesCursor, chordsEditor) {
 		this.viewer = viewer;
 		this.COLOR = "#FFBF00";
-		this.commentSpaceMng = null;
 		this.initController();
 		this.newComment = {};
 		this.offset = $("#" + viewer.canvasId).offset();
@@ -85,6 +84,7 @@ define([
 				commentId = commentEl.attr('data-commentId');
 			$.publish('CommentsView-removingComment', [commentEl, commentId]);
 		});
+		self.drawNewComment();
 	};
 
 	CommentsView.prototype._htmlIdExists = function(id) {
@@ -105,11 +105,7 @@ define([
 		var ctx = this.viewer.ctx,
 			self = this;
 
-		//draw only if doesn't exists, to avoid duplicates 
-		//(html elements are different from canvas elements, html elements are not reseted in every LSViewer draw whereas canvas elements are)
-		if (!this._htmlIdExists(this.newCommentId)) {
-			this.drawNewComment();
-		}
+		this.drawNewComment();
 
 		//draw using drawElem to respect scaling
 		this.viewer.drawElem(function() {
@@ -219,21 +215,28 @@ define([
 	 * NewComment represents the editable bubble with empty textare, drawn here as hidden
 	 */
 	CommentsView.prototype.drawNewComment = function() {
-		var el = Mustache.render(NewCommentTpl);
-		// divContainer should have position relative, absolut or fixed (so that appended elements' position depend on it)
-		$(this.viewer.divContainer).append($(el).hide()); 
+		//draw only if doesn't exists, to avoid duplicates 
+		//(html elements are different from canvas elements, html elements are not reseted in every LSViewer draw whereas canvas elements are)
+		if (!this._htmlIdExists(this.newCommentId)) {
+			var el = Mustache.render(NewCommentTpl);
+			// divContainer should have position relative, absolut or fixed (so that appended elements' position depend on it)
+			$(this.viewer.divContainer).append($(el).hide()); 
+		}
 	};
 
 	/**
 	 * show bubble is called when clicking on box with picture and name
 	 * @param  {String} commentId  Id of the comment, coincides with the key of the comments object in the model
-	 * @param  {Integer} index   refers to the index of the space manager, which is an ordered index, unlike comment Id
 	 *                           e.g. if we have removed comment with id 2, keys of comments is ["0","1","3","4"] whereas corresponding indexes will be [0,1,2,3], so when *                           commentId is 2, index will be 3 (works well as every time a comment is added or deleted, everything is recalculated)
 	 */
-	CommentsView.prototype.showBubble = function(commentId, index) {
+	CommentsView.prototype.showBubble = function(commentId) {
 		
 		//var height = $("#" + this.bubblePreId + commentId).height();
 		var height = 100;
+		if (!this.commentSpaceMng.commentSpaces[commentId]) {
+			this.drawComment(this.viewer.ctx);
+			throw "Comment space was not found for id " + commentId;
+		}
 		var area = this.commentSpaceMng.commentSpaces[commentId].getArea();
 		$("#" + this.bubblePreId + commentId).css({
 			top: area.y - height - 5,
@@ -241,9 +244,9 @@ define([
 			height: 100,
 			zIndex: 1900
 		}).show();
-		$("#bubble" + commentId+" .textComment");
+		$("#bubble" + commentId + " .textComment");
 	};
-
+ 
 	/**
 	 * When click on 'edit' in a comment, what we do is hide the actual comment and show 'new comment' bubble with the text of the current comment
 	 * @param  {Object}		bubbleEl    jquery Element
