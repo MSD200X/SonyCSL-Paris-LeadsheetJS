@@ -37,6 +37,9 @@ require.config({
 		},
 		underscore : {
 			exports: '_'	
+		},
+		jquery_autocomplete: {
+			deps: ['jquery']
 		}
 	}
 });
