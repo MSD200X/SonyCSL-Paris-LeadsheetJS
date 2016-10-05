@@ -23,6 +23,11 @@ define(
 
 		AudioPlayer.prototype._initSubscribe = function() {
 			var self = this;
+			$.subscribe('ToPlayer-playFromPercent', function(el, params) {
+				self.audio.stop();
+				self.audio.pausedAt = self.audio.getDuration() * params.percent * 1000; 
+				self.audio.play();
+			});
 			$.subscribe("AudioController-BuffersLoadedIntoSources", function() {
 				if (self.$tplRendered) {
 					self.$tplRendered.remove();

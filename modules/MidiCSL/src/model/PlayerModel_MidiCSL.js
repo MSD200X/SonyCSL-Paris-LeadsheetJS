@@ -252,6 +252,10 @@ define([
 			return 1000 * (60 / tempo);
 		};
 
+		PlayerModel_MidiCSL.prototype.getSongDuration = function() {
+			return this.songDuration ? this.songDuration : 0;
+		};
+
 		PlayerModel_MidiCSL.prototype.getPlayPosition = function(pos, unfoldedSong, type) {
 
 			pos = unfoldedSong.notesMapper.getFirstUnfoldedIdx(pos);
@@ -264,7 +268,7 @@ define([
 		 * Launch midi.noteon and noteoff instructions, this function is the main play function
 		 * @param  {int} tempo in bpm, it influence how fast the song will be played
 		 */
-		PlayerModel_MidiCSL.prototype.play = function(tempo) {
+		PlayerModel_MidiCSL.prototype.play = function(tempo, playFromArgument) {
 			if (this.isEnabled === false || this.getReady() === false) {
 				return;
 			}
@@ -292,15 +296,18 @@ define([
 					self.progressBar = ProgressBarModel(unfoldedSong, beatDuration);
 
 					self.noteTimeOut = []; // Keep every setTimeout so we can clear them on pause/stop
-
+					var beatOfLastNoteOff = lastNote.getCurrentTime() + lastNote.getDuration();
+					self.songDuration = beatOfLastNoteOff * beatDuration;
 					var cursorPosition = self.cursorNoteModel ? self.cursorNoteModel.getPos() : [null];
 					if (cursorPosition[0] == null) cursorPosition = [0, 0];
-					var playFrom = 0;
+					var playFrom = playFromArgument || 0;
 					var playTo, note;
 					var cursorPositionStart, cursorPositionEnd;
 					if (cursorPosition[0] !== 0) {
 						cursorPositionStart = self.getPlayPosition(cursorPosition[0], unfoldedSong);
-						playFrom = midiSongModel.getMelodySoundModelFromIndex(cursorPositionStart).getCurrentTime() * beatDuration;
+						if (playFrom === 0) {
+							playFrom = midiSongModel.getMelodySoundModelFromIndex(cursorPositionStart).getCurrentTime() * beatDuration;
+						}
 					}
 					if (cursorPosition.length !== 1 && cursorPosition[1] !== cursorPosition[0]) {
 						cursorPositionEnd = self.getPlayPosition(cursorPosition[1], unfoldedSong, {
