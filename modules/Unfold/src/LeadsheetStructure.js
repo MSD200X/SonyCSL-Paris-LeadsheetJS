@@ -371,19 +371,22 @@ define([
 			}
 			createStartLabel(StartLabel.CAPO, 0, 0);
 			var section, i, numBar = 0;
-
 			for (var iSection = 0; iSection < self.sections.length; iSection++) {
-				section = self.sections[iSection];
-				initSection(iSection, numBar);
-				numBar += section.getNumberOfBars();
+				try {
+					section = self.sections[iSection];
+					initSection(iSection, numBar);
+					numBar += section.getNumberOfBars();
 
-				lookForCodas(section, iSection);
-				lookForSegnos(section, iSection);
-				lookForSublabels(section, iSection);
+					lookForCodas(section, iSection);
+					lookForSegnos(section, iSection);
+					lookForSublabels(section, iSection);
+				} catch(e) {
+					console.log('Error on Leadsheet structure Initialization.');
+					console.log(e);
+				}
 			
 			}
-			createEndLabel(EndLabel.END, lastSectionEndPoint.section,
-				lastSectionEndPoint.bar);
+			createEndLabel(EndLabel.END, lastSectionEndPoint.section, lastSectionEndPoint.bar);
 		}());
 	};
 	return LeadsheetStructure;
