@@ -42,9 +42,6 @@ define([
 			this.MARGIN_RIGHT = -2;
 		}
 		if (chordSpaceEdition) {
-			if (mode === 'ONLY_CHORDS'){
-				throw "ChordSpaceManager: edition in ONLY_CHORDS mode not implemented yet (change mode or do not send ChordSpaceEdition object)";
-			}
 			this.chordSpaceEdition = chordSpaceEdition;
 			this.chordSpaceEdition.setMargins(this.MARGIN_RIGHT, this.MARGIN_TOP);
 		}
@@ -61,7 +58,7 @@ define([
 			}
 			viewer.canvasLayer.addElement(self);
 
-			self.chordSpaces = (self.mode === 'ONLY_CHORDS') ? self.createFilledChordSpaces(viewer) : self.createAllChordSpaces(viewer);
+			self.chordSpaces = self.chordSpaceEdition ? self.createAllChordSpaces(viewer) : self.createFilledChordSpaces(viewer);
 			if (self.chordSpaces.length === 0){
 				throw "chordSpace could not be created, probably ChordSpaceManager is on mode ONLY_CHORDS, and LSViewer.SAVE_CHORDS is false";
 			}
@@ -72,6 +69,7 @@ define([
 		$.subscribe('ChordSpaceView-updateChord', function(el, chordJson, chordModel, chordSpace) {
 			self.updateChord(chordJson, chordModel, chordSpace);
 			$.publish('ToViewer-draw', self.songModel);
+			self.chordSpaceEdition.undrawEditableChord();
 		});
 		// cursor view subscribe
 		$.subscribe('Cursor-moveCursorByElement-chords', function(el, inc) {
@@ -156,7 +154,7 @@ define([
 			this.cursor.setPos(posCursor);
 		}
 		// if event was clicked and we just selected one chord, we draw the pull down
-		if (posCursor[0] == posCursor[1] && clicked && this.isEditable()) {
+		if (posCursor[0] == posCursor[1] && clicked && this.cursor.getEditable()) {
 			var position = this.cursor.getPos();
 			position = position[0];
 			if (this.chordSpaceEdition) {
@@ -194,9 +192,9 @@ define([
 				}
 			}
 		}
-		if (this.mode === 'ALL_CHORD_SPACES'){
+		if (this.chordSpaceEdition) {
 			drawChordSpaceBorders(ctx);
-		}	
+		}
 	};
 	/**
 	 * @interface

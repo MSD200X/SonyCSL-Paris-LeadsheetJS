@@ -184,11 +184,11 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 				activElems = getElemsByYs(self.coords);
 			}
 			for (var i in activElems) {
-				activElems[i].onSelected(self.coords, self.mouseCoordsIni, self.mouseCoordsEnd, clicked, mouseUp, self.ctrlPressed);
-				if (activElems[i].getType() == 'CURSOR') {		
+				if (activElems[i].getType() == 'CURSOR') {
 					activElems[i].setCursorEditable(true);		
 				}		
 				activElems[i].enable();
+				activElems[i].onSelected(self.coords, self.mouseCoordsIni, self.mouseCoordsEnd, clicked, mouseUp, self.ctrlPressed);
 			}
 			self.refresh();
 		}
