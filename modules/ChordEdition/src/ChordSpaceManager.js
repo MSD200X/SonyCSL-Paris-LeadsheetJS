@@ -108,9 +108,9 @@ define([
 			for (var j = 0; j < beatsInBar; j++) {
 				area = {
 					x: (viewer.vxfBars[i].barDimensions.left + widthBeat * j) + offset,
-					y: (viewer.vxfBars[i].barDimensions.top - (viewer.vxfBars[i].symbolsPositions.CHORDS_DISTANCE_STAVE - 4)),
+					y: viewer.vxfBars[i].barDimensions.top - (viewer.vxfBars[i].symbolsPositions.CHORDS_DISTANCE_STAVE),
 					w: widthBeat,
-					h: 20
+					h: this.mode === 'ALL_CHORD_SPACES' ? 20 : 40
 				};
 				chordSpace.push(new ChordSpaceView(viewer, area, i, j + 1, viewer.scaler));
 			}

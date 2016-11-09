@@ -11,9 +11,10 @@ define(
 		 * @param {SongModel}
 		 * @param {BarWidthManager}
 		 */
-		function SymbolsPositioner(song, barWidthManager, defaultPositioningValues) {
+		function SymbolsPositioner(song, barWidthManager, defaultPositioningValues, voicesToDraw) {
 			this.barWidthManager = barWidthManager;
 			this.song = song;
+			this.voicesToDraw = voicesToDraw;
 			this.defaultPositioningValues = defaultPositioningValues ? defaultPositioningValues : {};
 			_.defaults(this.defaultPositioningValues, {PADDING_LEFT_CHORDS: 0, CHORDS_DISTANCE_STAVE: 10, LABELS_Y: 0, ENDINGS_Y: 12});
 			this.linesPositions = [];
@@ -79,11 +80,13 @@ define(
 				var linePositions = _.clone(this.defaultPositioningValues);
 				var chordsDistanceToAdd = 0;
 				var labelsYToAdd = 0;
-				if (lineProps.hasSectionSigns) {
-					chordsDistanceToAdd = 5;
-				}
-				if (lineProps.hasEndings || lineProps.hasLabel) {
-					chordsDistanceToAdd += 12;
+				if (this.voicesToDraw.length > 1) {
+					if (lineProps.hasSectionSigns) {
+						chordsDistanceToAdd = 5;
+					}
+					if (lineProps.hasEndings || lineProps.hasLabel) {
+						chordsDistanceToAdd += 12;
+					}
 				}
 				linePositions.CHORDS_DISTANCE_STAVE += chordsDistanceToAdd;
 				linePositions.LABELS_Y += labelsYToAdd;
