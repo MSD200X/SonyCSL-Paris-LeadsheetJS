@@ -273,7 +273,7 @@ define([
 				return;
 			}
 			if (typeof tempo === "undefined" || isNaN(tempo)) {
-				throw 'PlayerModel_MidiCSL - play - tempo must be a number ' + tempo;
+				tempo = 120;
 			}
 			this.emptyPlayNotes();
 			var self = this;

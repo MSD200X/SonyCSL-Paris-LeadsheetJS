@@ -14,7 +14,7 @@ define(
 		function SymbolsPositioner(song, barWidthManager, defaultPositioningValues, voicesToDraw) {
 			this.barWidthManager = barWidthManager;
 			this.song = song;
-			this.voicesToDraw = voicesToDraw;
+			this.voicesToDraw = voicesToDraw ? voicesToDraw : [];
 			this.defaultPositioningValues = defaultPositioningValues ? defaultPositioningValues : {};
 			_.defaults(this.defaultPositioningValues, {PADDING_LEFT_CHORDS: 0, CHORDS_DISTANCE_STAVE: 10, LABELS_Y: 0, ENDINGS_Y: 12});
 			this.linesPositions = [];

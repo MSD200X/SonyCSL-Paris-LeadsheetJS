@@ -58,7 +58,7 @@ define([
 			}
 			viewer.canvasLayer.addElement(self);
 
-			self.chordSpaces = self.chordSpaceEdition ? self.createAllChordSpaces(viewer) : self.createFilledChordSpaces(viewer);
+			self.chordSpaces = self.chordSpaceEdition || self.mode ===  'ALL_CHORD_SPACES' ? self.createAllChordSpaces(viewer) : self.createFilledChordSpaces(viewer);
 			if (self.chordSpaces.length === 0){
 				throw "chordSpace could not be created, probably ChordSpaceManager is on mode ONLY_CHORDS, and LSViewer.SAVE_CHORDS is false";
 			}
@@ -74,6 +74,9 @@ define([
 		// cursor view subscribe
 		$.subscribe('Cursor-moveCursorByElement-chords', function(el, inc) {
 			self.moveCursorByBar(inc);
+		});
+		$.subscribe('esc', function() {
+			self.chordSpaceEdition.undrawEditableChord();
 		});
 		$.subscribe('ctrl-a', function() {
 			self.enable();

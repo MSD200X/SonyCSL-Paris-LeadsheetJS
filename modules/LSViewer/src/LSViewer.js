@@ -439,7 +439,9 @@ define([
 							self.SAVE_CHORDS ? self._getTextBoundingBox : null,
 							offset
 						);
-						if (self.SAVE_CHORDS) chordViews.push(chordView);
+						if (self.SAVE_CHORDS) {
+							chordViews.push(chordView);
+						}
 					}
 					vxfBeams = beamMng.getVexflowBeams(); // we need to do getVexflowBeams before drawing notes
 

@@ -17,7 +17,7 @@ define([
 							[0,0,0,0]
 						]
 					};
-					var symbolsPositioner = new SymbolsPositioner(songModel, mockedBarWidthManager);
+					var symbolsPositioner = new SymbolsPositioner(songModel, mockedBarWidthManager, {}, ['chords', 'melody']);
 					symbolsPositioner.setElementsPositonsByLine();
 					var positionsBarO = symbolsPositioner.getPositionsForBarIndex(0);
 					assert.equal(

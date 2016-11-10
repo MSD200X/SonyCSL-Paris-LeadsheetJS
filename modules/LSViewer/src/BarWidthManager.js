@@ -7,6 +7,8 @@ define(['modules/core/src/SongBarsIterator', 'modules/core/src/SectionBarsIterat
 		if (dimParams === undefined) throw "BarWidthManager constructor argument missing.";
 
 		this.WIDTH_FACTOR = 1.6; // factor by which we multiply the minimum width so that notes are not so crammed (always > 1)
+		this.marginChordFactor = 1.5;
+		this.noteProportion = 2; // relation we estimate between a note's width and the width of a key signature, a time signature, or a clef
 		this.barsStruct = [];
 
 		this.lineHeight = dimParams.lineHeight;
@@ -39,12 +41,7 @@ define(['modules/core/src/SongBarsIterator', 'modules/core/src/SectionBarsIterat
 			leftChordMargins = [],
 			barNotes,
 			barChords,
-			sectionIt,
-			chordSpaceAvailable,
-			diff,
-			maxDiff,
-			chord,
-			marginChordFactor = 1.3; //always should be greater than 1
+			sectionIt; //always should be greater than 1
 
 		var songIt = new SongBarsIterator(song);
 
@@ -53,22 +50,21 @@ define(['modules/core/src/SongBarsIterator', 'modules/core/src/SectionBarsIterat
 			while (sectionIt.hasNext()) {
 				//get minimum notes width
 				var structElemsWidth = 0; //width of structure related elements: clef and key  and time signatures.
-				var noteProportion = 2; // relation we estimate between a note's width and the with of a key signature, a time signature, or a clef
 				barNotes = noteMng.getNotesAtCurrentBar(songIt);
 				if (self.voicesToDraw.indexOf('melody') !== -1) {
 					width = (barNotes.length * self.noteWidth) * self.WIDTH_FACTOR;
 				}
 				if (songIt.getBarIndex() === 0){
-					structElemsWidth = self.noteWidth * noteProportion; //if first bar we add space for clef and time signature (we consider clef and time signature as wide as a note)
+					structElemsWidth = self.noteWidth * self.noteProportion; //if first bar we add space for clef and time signature (we consider clef and time signature as wide as a note)
 					if (songIt.getBarKeySignature() !== 'C') {
-						structElemsWidth = self.noteWidth * noteProportion; // same for key signature (armure) if we are not in 'C'
+						structElemsWidth = self.noteWidth * self.noteProportion; // same for key signature (armure) if we are not in 'C'
 					}
 				} else {
 					if (songIt.doesTimeSignatureChange()){
-						structElemsWidth = self.noteWidth * noteProportion;
+						structElemsWidth = self.noteWidth * self.noteProportion;
 					}
 					if (songIt.doesKeySignatureChange()){
-						structElemsWidth = self.noteWidth * noteProportion;	
+						structElemsWidth = self.noteWidth * self.noteProportion;	
 					}
 				}
 				if (self.voicesToDraw.indexOf('chords') !== -1) {
@@ -76,9 +72,8 @@ define(['modules/core/src/SongBarsIterator', 'modules/core/src/SectionBarsIterat
 					barChords = chordsMng.getChordsByBarNumber(songIt.getBarIndex());
 					var maxChordWidth = 0;
 					for (var i = 0; i < barChords.length; i++) {
-						chord = barChords[i];
 						//we check if should be longer
-						maxChordWidth = Math.max(maxChordWidth, ctx.measureText(chord.toString()).width * marginChordFactor);
+						maxChordWidth = Math.max(maxChordWidth, ctx.measureText(barChords[i].toString()).width * self.marginChordFactor);
 					}
 					width = Math.max(width ? width : 0, maxChordWidth * songIt.getBarTimeSignature().getBeats());
 					width += structElemsWidth;
