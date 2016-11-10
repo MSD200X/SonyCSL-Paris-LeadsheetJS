@@ -283,11 +283,11 @@ define([
 			SongConverterMidi_MidiCSL.exportToMidiCSL(this.songModel, true, function(midiSong, unfoldedSong) {
 				var midiSongModel = new SongModel_MidiCSL({
 					song: midiSong
-				});
-				
-
-				// var metronome = midiSongModel.generateMetronome(self.songModel);
-				// midiSongModel.setFromType(metronome, 'metronome');
+				});				
+				if ($("input[name='metronome']").prop("checked")) {
+					var metronome = midiSongModel.generateMetronome(self.songModel);
+					midiSongModel.setFromType(metronome, 'metronome');
+				}
 				var song = midiSongModel.getSong();
 				if (song.length !== 0) {
 
@@ -320,29 +320,19 @@ define([
 					//return;
 					self._startTime = Date.now() - playFrom;
 
-					var realIndex = 0;
-					var metronomeChannel = 9;
-
 					//Classes for playing Midi. Parent (abstract) class
 					var midiObj = {
-						init: function(playerModel, tempo, currentNote, play, metronomeChannel) {
+						init: function(playerModel, tempo, currentNote) {
 							this.currentNote = currentNote;
 							this.playerModel = playerModel;
 							this.tempo = tempo;
 							this.velocityMin = 30;
 							this.randomVelocityRange = 20;
-							this.setPlay(play);
-							this.metronomeChannel = metronomeChannel;
 						},
-						setPlay: function() {
-							this.doPlay = true;
-						},
-						play: function(MIDI, notesToPlay) {
-							if (!this.doPlay) return;
-
+						play: function(MIDI, notesToPlay, duration) {
 							MIDI.setVolume(this.getChannel(), this.getVolume());
 							var velocityNote = Math.random() * this.randomVelocityRange + this.velocityMin;
-							var duration = this.currentNote.getDuration() * (60 / this.tempo);
+							var duration = duration ? duration : this.currentNote.getDuration() * (60 / this.tempo);
 							MIDI.chordOn(this.getChannel(), notesToPlay, velocityNote);
 							MIDI.chordOff(this.getChannel(), notesToPlay, duration);
 						},
@@ -363,15 +353,15 @@ define([
 						volume: 80
 					});
 					var metronomeMidiObj = _.extendOwn(Object.create(midiObj), {
+						getVolume: function() {
+	                        return this.volume * this.playerModel.chords.volume;
+                        },
 						volume: 80,
 						setPlay: function(play) {
 							this.doPlay = !!play;
 						},
 						getChannel: function() {
-							return this.metronomeChannel;
-						},
-						getVolume: function() {
-							return this.volume * this.playerModel.chords.volume;
+							return 9;
 						}
 					});
 					//we put them in object
@@ -410,7 +400,7 @@ define([
 								});
 								_.forEach(notesToPlay, function(currentNote) {
 									var midiObject = midiTypes[currentNote.getType()];
-									midiObject.init(self, tempo, currentNote, self.doMetronome(), metronomeChannel);
+									midiObject.init(self, tempo, currentNote);
 									midiObject.play(MIDI, currentNote.getMidiNote());
 								});
 								var melodyNotes = _.filter(notesToPlay, function(note) {
@@ -426,14 +416,12 @@ define([
 					};
 					// for each different position in the song
 					var timesPlayed = [];
-					// console.log(playTo)
 					for (var i = 0, c = song.length; i < c; i++) {
 						var currentNote = song[i];
 						if (currentNote && timesPlayed.indexOf(currentNote.getCurrentTime()) === -1 && (currentNote.getCurrentTime() * beatDuration) >= playFrom && (!playTo || (currentNote.getCurrentTime() * beatDuration) <= playTo)) {
 							timesPlayed.push(currentNote.getCurrentTime());
 							// console.log('playTime' + currentNote.getCurrentTime())
 							playNoteFn(currentNote.getCurrentTime());
-							realIndex++;
 						}
 					}
 				}
@@ -488,20 +476,20 @@ define([
 			// check MIDI/Plugin.js for number (you have to remove 1)
 			var instruments = {
 				0: "acoustic_grand_piano",
-				/*		27 : "electric_guitar_clean",
-				30 : "distortion_guitar",
-				24 : "acoustic_guitar_nylon",
-				25 : "acoustic_guitar_steel",
-				26 : "electric_guitar_jazz",
-				33 : "electric_bass_finger",
-				34 : "electric_bass_pick",
-				56 : "trumpet",
-				61 : "brass_section",
-				64 : "soprano_sax",*/
-				/*65: "alto_sax",*/
-				/*		66 : "tenor_sax",
-				67 : "baritone_sax",
-				73 : "flute",*/
+				// 30 : "distortion_guitar",
+				// 24 : "acoustic_guitar_nylon",
+				// 25 : "acoustic_guitar_steel",
+				// 26 : "electric_guitar_jazz",
+				// 27 : "electric_guitar_clean",
+				// 33 : "electric_bass_finger",
+				// 34 : "electric_bass_pick",
+				// 56 : "trumpet",
+				// 61 : "brass_section",
+				// 64 : "soprano_sax",
+				// 65: "alto_sax",
+				// 66 : "tenor_sax",
+				// 67 : "baritone_sax",
+				// 73 : "flute",
 				116: "taiko_drum"
 			};
 			return instruments;
@@ -532,7 +520,7 @@ define([
 			var channels = {};
 			if (typeof instruments !== "undefined") {
 				for (var i = 0, c = instruments.length; i < c; i++) {
-					if (instruments[i] != "116") {
+					if (instruments[i] !== "116") {
 						channels[i] = {
 							instrument: parseInt(instruments[i], 10),
 							number: parseInt(instruments[i], 10),
