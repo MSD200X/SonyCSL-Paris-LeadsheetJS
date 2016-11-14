@@ -62,6 +62,9 @@ define(
 					$.publish("Audioplayer-multitrackMixerInserted", {$element: self.$tplRendered});
 				}
 			});
+			$.subscribe('NoteSpace-CursorPosChanged', function(el, cursorStart, cursorEnd){
+					
+			})
 			$.subscribe("AudioCursor-clickedAudio", function(el, posCursor) {
 				self.startPos = posCursor;
 			 	self.audio.disableLoop();

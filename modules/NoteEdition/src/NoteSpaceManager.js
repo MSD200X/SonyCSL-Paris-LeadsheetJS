@@ -32,7 +32,7 @@ define([
 		this.elemMng = new ElementManager();
 		this.noteSpace = [];
 		this.initSubscribe();
-		this.enabled = enabled === undefined ? true : enabled;
+		this.enabled = enabled ? enabled : false;
 		this.COLOR = color || "#0099FF";
 	}
 
@@ -54,10 +54,8 @@ define([
 
 		});
 		if (self.CL_TYPE === 'NOT_INTERACTIVE'){
-			$.subscribe('ToNoteSpaceManager-enable', function() {
-				self.enable();	
-			});
 			$.subscribe('ToPlayer-play', function(){
+				self.enable();	
 				self.playing = true;
 			});
 			$.subscribe('ToPlayer-stop', function(){
@@ -119,7 +117,7 @@ define([
 		if (posCursor) {
 			this.cursor.setPos(posCursor);
 			//when clicking on a note, if there is an audio player, cursor should be updated
-			$.publish('ToWave-setCursor', this.cursor.getPos()); // getPos() returns array, of two elements, each element will be one parameter
+			$.publish('NoteSpace-CursorPosChanged', this.cursor.getPos()); // getPos() returns array, of two elements, each element will be one parameter
 		}
 	};
 

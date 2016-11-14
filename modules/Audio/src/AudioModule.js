@@ -9,9 +9,8 @@ define([
 ],function(AudioController, AudioDrawer, AudioCursor, AudioPlayer, AudioAnimation, NotesCursorUpdater, ChordsCursorUpdater){
 	function AudioModule(song, params){
 		params = params || {};
-		var audio = new AudioController(song);
-		new AudioPlayer(audio, params.playerView);
-
+		var audioController = new AudioController(song);
+		new AudioPlayer(audioController, params.playerView);
 
 		if (params){
 			var paramsDrawer = {
@@ -20,10 +19,13 @@ define([
 	          topAudio: -120,
 	          heightAudio: 75,
     	    };
+    	    var audioCursor;
     	    // useAudioCursor unless it is explicitly set to false (default is true)
-    	    var useAudioCursor = params.audioCursor === undefined || params.audioCursor === true; 
+    	    if (params.audioCursor !== false) {
+    	    	var audioCursor = new AudioCursor(audioController, false, false);
+    	    } 
     	    var audioAnimation = null;
-			if (useAudioCursor || params.notesCursor) {
+			if (params.notesCursor) {
 				var notesCursor = params.notesCursor;
 				var chordsCursor = params.chordsCursor;
     	    	audioAnimation = new AudioAnimation(params.playerView);
@@ -38,12 +40,12 @@ define([
 	    	    }
 	   	    }
 	   	    if (params.viewer && params.audioDrawer !== false) {
-	    		var audioDrawer = new AudioDrawer(song, params.viewer, useAudioCursor, audioAnimation, paramsDrawer);
+	    		var audioDrawer = new AudioDrawer(song, params.viewer, audioCursor, audioAnimation, paramsDrawer);
 	    		audio.drawer = audioDrawer; //needed for other modules like audioComments
 	   	    }
 		}
 
-		return audio;
+		return audioController;
 	}
 	return AudioModule;
 });

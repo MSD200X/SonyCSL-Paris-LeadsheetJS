@@ -256,7 +256,7 @@ define(
 		};
 
 		AudioController.prototype.disableLoop = function() {
-			if (!this.loopSong){
+			if (this.source && !this.loopSong){
 				this.startedAt = Date.now() - this._getCurrentPlayingTime(); // we update startedAt like if we had made play from here	
 				this.source.loop = false;
 				this.presetLoop = null;
@@ -300,11 +300,12 @@ define(
 			startPoint = startPoint || 0;
 			endPoint = endPoint || 1;
 
-			var sampleStart = ~~(startPoint * this.buffer.length),
-				sampleEnd = ~~(endPoint * this.buffer.length),
+			var buffer = _.first(this.bufferLoader.bufferList),
+				sampleStart = ~~(startPoint * buffer.length),
+				sampleEnd = ~~(endPoint * buffer.length),
 				sampleSize = (sampleEnd - sampleStart) / length,
 				sampleStep = ~~(sampleSize / 10) || 1,
-				channels = this.buffer.numberOfChannels,
+				channels = buffer.numberOfChannels,
 				//splitPeaks = [],
 				mergedPeaks = [],
 				/*peaks,*/
@@ -312,7 +313,7 @@ define(
 
 			for (c = 0; c < channels; c++) {
 				//peaks = splitPeaks[c] = [];
-				chan = this.buffer.getChannelData(c);
+				chan = buffer.getChannelData(c);
 				for (i = 0; i < length; i++) {
 					start = ~~((i * sampleSize) + sampleStart);
 					end = ~~(start + sampleSize);

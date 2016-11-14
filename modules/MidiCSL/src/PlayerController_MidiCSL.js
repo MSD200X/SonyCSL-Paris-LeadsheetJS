@@ -21,9 +21,7 @@ define([
 	 */
 	PlayerController.prototype.initSubscribe = function() {
 		var self = this;
-		$.subscribe('ToPlayer-play', function(el, tempo) {
-			$.publish('ToNoteSpaceManager-enable');
-			
+		$.subscribe('ToPlayer-play', function(el, tempo) {			
 			self.play(tempo);
 		});
 		$.subscribe('ToPlayer-playFromPercent', function(el, obj) {

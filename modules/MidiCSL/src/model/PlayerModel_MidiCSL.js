@@ -268,7 +268,7 @@ define([
 		 * Launch midi.noteon and noteoff instructions, this function is the main play function
 		 * @param  {int} tempo in bpm, it influence how fast the song will be played
 		 */
-		PlayerModel_MidiCSL.prototype.play = function(tempo, playFromArgument) {
+		PlayerModel_MidiCSL.prototype.play = function(tempo) {
 			if (this.isEnabled === false || this.getReady() === false) {
 				return;
 			}
@@ -300,7 +300,7 @@ define([
 					self.songDuration = beatOfLastNoteOff * beatDuration;
 					var cursorPosition = self.cursorNoteModel ? self.cursorNoteModel.getPos() : [null];
 					if (cursorPosition[0] == null) cursorPosition = [0, 0];
-					var playFrom = playFromArgument || 0;
+					var playFrom = 0;
 					var playTo, note;
 					var cursorPositionStart, cursorPositionEnd;
 					if (cursorPosition[0] !== 0) {
@@ -316,8 +316,6 @@ define([
 						note = midiSongModel.getMelodySoundModelFromIndex(cursorPositionEnd);
 						playTo = (note.getCurrentTime() + note.getDuration()) * beatDuration;
 					}
-
-					//return;
 					self._startTime = Date.now() - playFrom;
 
 					//Classes for playing Midi. Parent (abstract) class
