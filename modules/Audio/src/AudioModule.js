@@ -22,7 +22,7 @@ define([
     	    var audioCursor;
     	    // useAudioCursor unless it is explicitly set to false (default is true)
     	    if (params.audioCursor !== false) {
-    	    	var audioCursor = new AudioCursor(audioController, false, false);
+    	    	audioCursor = new AudioCursor(audioController, false, false);
     	    } 
     	    var audioAnimation = null;
 			if (params.notesCursor) {

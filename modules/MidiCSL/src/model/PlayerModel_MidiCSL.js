@@ -330,7 +330,7 @@ define([
 						play: function(MIDI, notesToPlay, duration) {
 							MIDI.setVolume(this.getChannel(), this.getVolume());
 							var velocityNote = Math.random() * this.randomVelocityRange + this.velocityMin;
-							var duration = duration ? duration : this.currentNote.getDuration() * (60 / this.tempo);
+							duration = duration ? duration : this.currentNote.getDuration() * (60 / this.tempo);
 							MIDI.chordOn(this.getChannel(), notesToPlay, velocityNote);
 							MIDI.chordOff(this.getChannel(), notesToPlay, duration);
 						},
