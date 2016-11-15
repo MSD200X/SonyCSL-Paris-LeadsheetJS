@@ -453,8 +453,7 @@ define([
 		PlayerModel_MidiCSL.prototype.stop = function(dontResetPosition) {
 			this.stopAllNotes();
 			this.playState = false;
-			if (!dontResetPosition) {
-				this.setPositionIndex(0);
+			if (!dontResetPosition && this.isEnabled) {
 				if (self.progressBar)
 					self.progressBar.setPositionInPercent(0);
 			}

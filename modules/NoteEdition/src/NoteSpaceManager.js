@@ -36,6 +36,15 @@ define([
 		this.COLOR = color || "#0099FF";
 	}
 
+	/* private functions */
+	var _changeCursorPosition = function(newPos) {
+		if (newPos) {
+			this.cursor.setPos(newPos);
+			//when clicking on a note, if there is an audio player, cursor should be updated
+			$.publish('NoteSpace-CursorPosChanged', this.cursor.getPos()); // getPos() returns array, of two elements, each element will be one parameter
+		}
+	}
+
 	/**
 	 * Subscribe to view events
 	 */
@@ -106,7 +115,7 @@ define([
 	 * @param  {Boolean} ctrlPressed 
 	 */
 	NoteSpaceManager.prototype.onSelected = function(coords, ini, end, clicked, mouseUp, ctrlPressed) {
-		if (!this.interactive)	return;
+		if (!this.interactive) return;
 		var posCursor;
 		var coordsTop, coordsBottom;
 
@@ -114,11 +123,7 @@ define([
 		if (ctrlPressed){
 			posCursor = this.elemMng.getMergedCursors(posCursor, this.cursor.getPos());
 		}
-		if (posCursor) {
-			this.cursor.setPos(posCursor);
-			//when clicking on a note, if there is an audio player, cursor should be updated
-			$.publish('NoteSpace-CursorPosChanged', this.cursor.getPos()); // getPos() returns array, of two elements, each element will be one parameter
-		}
+		_changeCursorPosition.apply(this, [posCursor]);
 	};
 
 	/**
@@ -135,15 +140,14 @@ define([
 	 * @param  {CanvasContext} ctx
 	 */
 	NoteSpaceManager.prototype.drawCursor = function(ctx) {
-		if (this.noteSpace.length === 0) return;
+		if (this.noteSpace.length === 0 || (this.getType() === 'NOT_INTERACTIVE' && !this.playing)) return;
 		var position = this.cursor.getPos(),
 			saveFillColor = ctx.fillStyle,
 		 	areas = [];
-		
-		ctx.fillStyle = this.COLOR;
-		ctx.globalAlpha = 0.2;
 
 		if (position[0] !== null) {
+			ctx.fillStyle = this.COLOR;
+			ctx.globalAlpha = 0.2;
 			areas = this.elemMng.getElementsAreaFromCursor(this.noteSpace, position);
 			for (i = 0; i < areas.length; i++) {
 				ctx.fillRect(
@@ -177,7 +181,8 @@ define([
 	 */
 	NoteSpaceManager.prototype.disable = function() {
 		if (!this.playing){ 		//if 'NOT_INTERACTIVE' depends if playing
-			this.enabled = false;	
+			this.enabled = false;
+			_changeCursorPosition.apply(this, [[0,0]]);
 		}
 	};
 	/**

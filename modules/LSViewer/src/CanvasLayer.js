@@ -349,7 +349,7 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 		var elem;
 		for (var name in this.elems) {
 			elem = this.elems[name];
-			if (elem.isEnabled() && (elem.getType() === 'CURSOR' || elem.getType() === 'NOT_INTERACTIVE')) {
+			if ((elem.isEnabled() && elem.getType() === 'CURSOR') || elem.getType() === 'NOT_INTERACTIVE') {
 				//drawing cursor for notesManager, chordsManager and AudioCursor (selection cursor)
 				elem.drawCursor(this.ctx);
 			}
