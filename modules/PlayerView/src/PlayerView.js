@@ -54,11 +54,11 @@ define([
 	PlayerView.prototype.initController = function() {
 		var self = this;
 		$('#play_button').click(function() {
+			
 			var tempo = self.getTempo();
 			$.publish('ToPlayer-play', tempo);
 		});
 		$('#stop_button').click(function() {
-			self.disablePlayer.apply(self);
 			$.publish('ToPlayer-stop');
 		});
 		$('#pause_button').click(function() {
@@ -213,6 +213,7 @@ define([
 			} else {
 				self.unmuteMetronome();
 			}
+			$("input[name=metronome]").prop("checked",!isMetronome);
 		});
 		$.subscribe('PlayerModel-positionPerCent', function(el, obj) {
 			self.updateProgressbar(obj.positionInPercent * 100, obj.songDuration);

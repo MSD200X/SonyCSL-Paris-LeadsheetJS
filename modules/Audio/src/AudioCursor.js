@@ -1,12 +1,16 @@
 define([
 	'jquery',
+	'underscore',
 	'modules/Edition/src/ElementManager',
 	'modules/Cursor/src/CursorModel'
-], function($, ElementManager, CursorModel) {
-	function AudioCursor(audioDrawer, viewer, audioAnimation) {
+], function($, _, ElementManager, CursorModel) {
+	/**
+	 *	AudioCursor may not be drawn but will still be used to map note cursor pos with audio times
+	 */
+	function AudioCursor(audioController, audioPlayer, viewer, audioAnimation) {
 		this.CL_TYPE = 'CURSOR';
 		this.CL_NAME = 'audioCursor';
-		this.audioDrawer = audioDrawer;
+		this.audioController = audioController;
 		this.viewer = viewer;
 		this.elemMng = new ElementManager();
 		this.audioAnimation = audioAnimation;
@@ -16,7 +20,6 @@ define([
 	AudioCursor.prototype._initSubscribe = function() {
 		var self = this;
 		$.subscribe('AudioDrawer-audioDrawn', function() {
-			//if (!self.enabled) return;
 			self.cursor = new CursorModel(self.audioDrawer.audio.getDuration());
 			//if there is no canvasLayer we don't paint cursor
 			if (self.viewer.canvasLayer) {
@@ -29,20 +32,31 @@ define([
 			}
 
 		});
-		$.subscribe("ToWave-setCursor", function(el, cursorStart, cursorEnd) {
+		$.subscribe("NoteSpace-CursorPosChanged", function(el, cursorStart, cursorEnd) {
+			// first convert to unfolded indexes
+			cursorStart = self.audioController.song.notesMapper.getFirstUnfoldedIdx(cursorStart);
+			cursorEnd = self.audioController.song.notesMapper.getFirstUnfoldedIdx(cursorEnd);
+			var beats = self.audioController.song.getComponent('notes').getBeatIntervalByIndexes(cursorStart, cursorEnd);
+			var startTime = self.audioController.beatDuration * (beats[0] - 1);
+			var endTime = self.audioController.beatDuration * (_.last(beats) - 1);
+			if (cursorStart === cursorEnd) {
+				$.publish('AudioCursor-clickedAudio', startTime);
+			} else {
+				$.publish('AudioCursor-selectedAudio', [startTime, endTime]);
+			}
 			//if audio is not being drawn, no need to move audio cursor
-			if (!self.audioDrawer.isEnabled) return;
-
-			var beats = self.audioDrawer.songModel.getComponent('notes').getBeatIntervalByIndexes(cursorStart, cursorEnd);
-			var startTime = self.audioDrawer.audio.beatDuration * (beats[0] - 1);
+			if (!self.audioDrawer || !self.audioDrawer.isEnabled) return;
 			if (self.cursor) {
-				self.cursor.setPos([startTime, startTime]); //we equal cursor start and end cursor, because this way the player won't loop
+				self.cursor.setPos([startTime, endTime]); //we equal cursor start and end cursor, because this way the player won't loop
 				self.updateCursorPlaying(startTime);
 			}
-			$.publish('AudioCursor-clickedAudio', startTime);
 		});
 
 	};
+
+	AudioCursor.prototype.setAudioDrawer = function(audioDrawer) {
+		this.audioDrawer = audioDrawer;
+	}
 
 	/**
 	 * 

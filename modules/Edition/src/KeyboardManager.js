@@ -69,7 +69,6 @@ define(['utils/NoteUtils',
 			var key = String.fromCharCode(keyCode).toLowerCase();
 			var ctrlMetaKey = !!(evt.metaKey || evt.ctrlKey);
 			// console.log("metaKey");
-			// console.log(metaKey);
 			var d = evt.srcElement || evt.target;
 			var ACC_KEYS = {
 				"s": "#",
@@ -151,6 +150,8 @@ define(['utils/NoteUtils',
 					} else {
 						publish('leftright-arrows', evt, inc);
 					}
+				} else if (keyCode === 27) {
+					publish('esc', evt);
 				}
 
 			}else{
@@ -167,7 +168,7 @@ define(['utils/NoteUtils',
 				} else if (keyCode == 37 || keyCode == 39) { // left-right arrows
 					inc = (keyCode == 39) ? 1 : -1;
 					publish('ctrl-leftright-arrows', evt, inc);
-				}
+				} 
 			}
 		});
 		$(document).keyup(function(evt) {

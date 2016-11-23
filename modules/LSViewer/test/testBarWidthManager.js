@@ -17,8 +17,15 @@ define(['modules/LSViewer/src/BarWidthManager'], function(BarWidthManager) {
 			test("BarWidthManager", function(assert) {
 
 				//Test1: no bar is too wide
-				var barWidthMng = new BarWidthManager(lineHeight, lineWidth, noteWidth, barsPerLine, marginTop, 1, marginLeft);
-
+				var barWidthMng = new BarWidthManager({
+					lineHeight: lineHeight,
+					lineWidth: lineWidth, 
+					noteWidth: noteWidth, 
+					barsPerLine: barsPerLine, 
+					marginTop: marginTop,
+					lastBarWidthRatio: 1,
+					voicesToDraw : ['chords', 'melody']
+				});
 				minWidths = [100, 100, 100, 100,
 					100, 100, 100, 100
 				];

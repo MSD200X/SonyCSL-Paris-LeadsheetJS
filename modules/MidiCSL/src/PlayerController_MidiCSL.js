@@ -21,9 +21,7 @@ define([
 	 */
 	PlayerController.prototype.initSubscribe = function() {
 		var self = this;
-		$.subscribe('ToPlayer-play', function(el, tempo) {
-			$.publish('ToNoteSpaceManager-enable');
-			
+		$.subscribe('ToPlayer-play', function(el, tempo) {			
 			self.play(tempo);
 		});
 		$.subscribe('ToPlayer-playFromPercent', function(el, obj) {
@@ -37,7 +35,12 @@ define([
 		$.subscribe('ToPlayer-stop', function(el) {
 			self.stop();
 		});
-
+		$.subscribe("NoteSpace-CursorPosChanged", function(el, cursorStart, cursorEnd){
+			if (cursorStart !== 0 && cursorEnd !== 0 && self.model.playState) {
+				self.stop();
+				self.play();
+			}
+		});
 		$.subscribe('ToPlayer-pause', function(el) {
 			self.pause();
 		});
@@ -163,7 +166,7 @@ define([
 	 * Function is called to load the state of the player
 	 */
 	PlayerController.prototype.initView = function() {
-		$.publish('PlayerModel-onvolumechange', this.model.melody.volume);
+		$.publish('PlayerModel-onvolumechange');
 	};
 
 	return PlayerController;

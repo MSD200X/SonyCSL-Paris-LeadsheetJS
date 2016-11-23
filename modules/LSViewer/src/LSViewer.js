@@ -46,7 +46,7 @@ define([
 			this.scaler = new Scaler(); //object that scales objects. Used in NoteSpaceView and ChordSpaceView
 			this.SCALE = null; //scale from 0 to 1 
 			//0.999  fixes vexflow bug that doesn't draw last pixel on end bar
-			this.SCALE_FIX = 0.995;
+			this.SCALE_FIX = 0.999;
 
 			this.CANVAS_DIV_WIDTH_PROPORTION = 1; //width proportion between canvas created and divContainer (space between canvas border and divContainer border)
 			this.NOTE_WIDTH = 20; // estimated note width in order to be more flexible
@@ -66,11 +66,13 @@ define([
 			this.PADDING_LEFT_CHORDS = params.paddingLeftChords || 0;
 
 			this.DRAW_STAVE_NUMBERS = params.drawStaveNumbers === undefined ? true : params.drawStaveNumbers;
-			this.ONLY_CHORDS = !!params.onlyChords;
-			this.DRAW_CLEF = !params.onlyChords;
-			this.DRAW_KEY_SIGNATURE = !params.onlyChords;
+			// default voices
+			this.voicesToDraw = params.voicesToDraw ? params.voicesToDraw : ['chords', 'melody'];
+			this.ONLY_CHORDS = this.voicesToDraw.length === 1 && this.voicesToDraw[0] === 'chords';
+			this.DRAW_CLEF = !this.ONLY_CHORDS;
+			this.DRAW_KEY_SIGNATURE = !this.ONLY_CHORDS;
 			this.DRAW_STAVE_LINES = params.drawStaveLines === undefined ? true : params.drawStaveLines;
-			this.TEXT_CLOSER_TO_STAVE = !!params.onlyChords;
+			this.TEXT_CLOSER_TO_STAVE = !!this.ONLY_CHORDS;
 
 			this.CURSOR_MARGIN_LEFT = 6;
 			this.CURSOR_MARGIN_TOP = 20;
@@ -111,6 +113,16 @@ define([
 			this._resize(width);
 			this.layer = params.layer;
 
+			this.barWidthMng = new BarWidthManager({
+				lineHeight: this.lineHeight,
+				lineWidth: this.LINE_WIDTH, 
+				noteWidth: this.NOTE_WIDTH, 
+				barsPerLine: this.BARS_PER_LINE, 
+				marginTop: this.marginTop,
+				lastBarWidthRatio: this.shortenLastBar ? this.LAST_BAR_WIDTH_RATIO : 1,
+				voicesToDraw : this.voicesToDraw,
+				keepConsistentWidths: this.ONLY_CHORDS
+			});
 		};
 
 		LSViewer.prototype._getWidthFromContainer = function(divContainer) {
@@ -128,8 +140,6 @@ define([
 			var divCss = {
 				textAlign: "center",
 			};
-			this.barWidthMng = null;
-
 			$(this.divContainer).css(divCss);
 			return canvas[0];
 		};
@@ -150,7 +160,6 @@ define([
 				}
 				var width = self._getWidthFromContainer(this.divContainer);
 				if (self.canvas.width !== width) {
-					console.log('resize!!!!')
 					self.canvas.width = width;
 					self._resize(width);
 					self.forceNewCanvasLayer = true;
@@ -307,12 +316,6 @@ define([
 		};
 
 		LSViewer.prototype.draw = function(song) {
-			if (typeof song === "undefined") {
-				console.warn('song is empty'); // only for debug, remove after 1 week safe
-				return;
-			}
-			//console.log("draw");
-			//console.time('whole draw');
 			var i, j, v, c;
 
 			var numBar = 0,
@@ -336,9 +339,7 @@ define([
 				barDimensions,
 				sympolsPositions,
 				tieMng = new TieManager();
-
-			var lastBarWidthRatio = this.shortenLastBar ? this.LAST_BAR_WIDTH_RATIO : 1;
-			this.barWidthMng = new BarWidthManager(this.lineHeight, this.LINE_WIDTH, this.NOTE_WIDTH, this.BARS_PER_LINE, this.marginTop, lastBarWidthRatio);
+			this.barWidthMng.setLineWidth(this.LINE_WIDTH);
 			this.barWidthMng.calculateBarsStructure(song, nm, cm, this.ctx, this.FONT_CHORDS);
 			var symbolsPositioner = new SymbolsPositioner(
 				song,
@@ -347,7 +348,8 @@ define([
 					ENDINGS_Y: self.ENDINGS_Y,
 					LABELS_Y: self.LABELS_Y,
 					CHORDS_DISTANCE_STAVE : self.CHORDS_DISTANCE_STAVE
-				}
+				},
+				this.voicesToDraw
 			);
 			symbolsPositioner.setElementsPositonsByLine();
 			this.setHeight(song, this.barWidthMng);
@@ -364,7 +366,6 @@ define([
 				// for each bar
 				sectionIt = new SectionBarsIterator(section);
 				while (sectionIt.hasNext()) {
-					//console.time('whole bar');
 					barNoteViews = [];
 
 					beamMng = new BeamManager();
@@ -438,7 +439,9 @@ define([
 							self.SAVE_CHORDS ? self._getTextBoundingBox : null,
 							offset
 						);
-						if (self.SAVE_CHORDS) chordViews.push(chordView);
+						if (self.SAVE_CHORDS) {
+							chordViews.push(chordView);
+						}
 					}
 					vxfBeams = beamMng.getVexflowBeams(); // we need to do getVexflowBeams before drawing notes
 

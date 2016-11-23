@@ -27,7 +27,6 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 		if (interactiveCanvasLayer) this._listenEvents(canvasLayer);
 		this.elems = {}; //elements to be added (can be CLICKABLE or CURSOR)
 		this.order = []; //we keep trace of order in which elements are added, to decide which should be prioritized on click
-		this.ctrlPressed = false;
 	}
 
 	CanvasLayer.prototype._createLayer = function(viewer) {
@@ -113,7 +112,8 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 		 * E.g.2 if notes at top and chords at bottom of selection, we enable edition on notes and chords at the same time.
 		 * @param  {Object} coords e.g.:  {x:12, y:21}
 		 *
-		 * @return {Array}        array of active elements (being elements like ChordSpaceManager, NoteSpaceManager, WaveDrawer. TextElementManager will never be returned because it is not selectable (it does not have getY() function), it is only thought for being clicked)
+		 * @return {Array}      array of active elements (being elements like ChordSpaceManager, NoteSpaceManager, WaveDrawer. 
+		 *						TextElementManager will never be returned because it is not selectable (it does not have getY() function), it is only thought for being clicked)
 		 */
 		function getElemsByYs(coords) {
 			var minY = 999999,
@@ -157,6 +157,7 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 					return [elem];
 				}
 			}
+			return [];
 		}
 
 		function resetElems() {
@@ -172,23 +173,23 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 		 * [selection description]
 		 * @param  {Boolean} clicked true when clicked (mouseDown and mouseUp in same position) false when moved mouse onMouseDown
 		 */
-		function selection(clicked, mouseUp) {
-			var cursorPos;
-			if (!self.ctrlPressed){
-				resetElems();
-			}
-			var activElems;
+		function selection(clicked, mouseUp, event) {
+			var activElems = [];
+			var ctrlPressed = event && event.metaKey !== false
 			if (clicked) {
 				activElems = getOneActiveElement(self.coords);
 			} else {
 				activElems = getElemsByYs(self.coords);
 			}
+			if (activElems.length <= 1 && ctrlPressed === false) {
+				resetElems();
+			}
 			for (var i in activElems) {
-				activElems[i].onSelected(self.coords, self.mouseCoordsIni, self.mouseCoordsEnd, clicked, mouseUp, self.ctrlPressed);
-				if (activElems[i].getType() == 'CURSOR') {		
+				if (activElems[i].getType() == 'CURSOR') {
 					activElems[i].setCursorEditable(true);		
 				}		
 				activElems[i].enable();
+				activElems[i].onSelected(self.coords, self.mouseCoordsIni, self.mouseCoordsEnd, clicked, mouseUp, ctrlPressed);
 			}
 			self.refresh();
 		}
@@ -250,12 +251,8 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 		function mouseUp(evt) {
 			self.mouseDown = false;
 			var isClick = self.mouseDidntMove();
-			if (isClick && evt.button == 2) {
-				// $.publish('right-click');
-			} else {
-				if (isTargetValid(evt)) {
-					selection(isClick, true);
-				}
+			if (isTargetValid(evt)) {
+				selection(isClick, true, evt);
 			}
 		}
 		// check if we click on something that is canvas or that contain canvas to prevent click on something that is above a player or menu etc
@@ -266,7 +263,7 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 			return false;
 		}
 
-		$('html').on('mousemove',function(evt) {
+		$(this.canvasLayer).on('mousemove',function(evt) {
 			//draw cursor selection
 			var xy = self._getXandY($(self.canvasLayer), evt);
 			if (self.mouseDown) {
@@ -275,7 +272,7 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 				self._setCoords(self.mouseCoordsIni, self.mouseCoordsEnd);
 				self._clampCoords($(self.canvasLayer));
 				if (isTargetValid(evt)) {
-					selection();
+					selection(false, false, evt);
 				}
 			}
 			setPointerIfInPath(xy);
@@ -349,7 +346,7 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 		var elem;
 		for (var name in this.elems) {
 			elem = this.elems[name];
-			if (elem.isEnabled() && (elem.getType() === 'CURSOR' || elem.getType() === 'NOT_INTERACTIVE')) {
+			if ((elem.isEnabled() && elem.getType() === 'CURSOR') || elem.getType() === 'NOT_INTERACTIVE') {
 				//drawing cursor for notesManager, chordsManager and AudioCursor (selection cursor)
 				elem.drawCursor(this.ctx);
 			}
@@ -375,9 +372,7 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 	CanvasLayer.prototype.destroy = function() {
 		$('html').off('mousedown');
 		$('html').off('mouseup');
-		$('html').off('mousemove');
-		$.unsubscribe('ctrlPressed');
-		$.unsubscribe('ctrlUnpressed');
+		$(this.canvasLayer).off('mousemove');
 		$.unsubscribe('CanvasLayer-refresh');
 	};
 	return CanvasLayer;

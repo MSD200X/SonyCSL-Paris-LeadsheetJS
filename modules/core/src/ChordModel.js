@@ -102,7 +102,7 @@ define([
 
 	ChordModel.prototype.setBeat = function(beat) {
 		if (typeof beat !== "undefined" && !isNaN(beat)) {
-			this.beat = beat;
+			this.beat = parseInt(beat, 10);
 			return true;
 		}
 		return false;

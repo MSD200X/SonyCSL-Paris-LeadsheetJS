@@ -32,8 +32,19 @@ define([
 		this.elemMng = new ElementManager();
 		this.noteSpace = [];
 		this.initSubscribe();
-		this.enabled = enabled === undefined ? true : enabled;
+		this.enabled = enabled ? enabled : false;
 		this.COLOR = color || "#0099FF";
+	}
+
+	/* private functions */
+	var _changeCursorPosition = function(newPos, fireEvent) {
+		if (newPos && this.cursor.getPos() !== newPos) {
+			this.cursor.setPos(newPos);
+			//when clicking on a note, if there is an audio player, cursor should be updated
+			if (fireEvent !== false) {
+				$.publish('NoteSpace-CursorPosChanged', this.cursor.getPos()); // getPos() returns array, of two elements, each element will be one parameter
+			}
+		}
 	}
 
 	/**
@@ -54,18 +65,17 @@ define([
 
 		});
 		if (self.CL_TYPE === 'NOT_INTERACTIVE'){
-			$.subscribe('ToNoteSpaceManager-enable', function() {
-				self.enable();	
-			});
-			$.subscribe('ToPlayer-play', function(){
+			var _activate = function() {
+				self.enable();
 				self.playing = true;
-			});
-			$.subscribe('ToPlayer-stop', function(){
+			};
+			var _unactivate = function(){
 				self.playing = false;
-			});	
-			$.subscribe('ToPlayer-pause', function(){
-				self.playing = false;
-			});
+			};
+			$.subscribe('ToPlayer-playPause', _activate);
+			$.subscribe('ToPlayer-play', _activate);
+			$.subscribe('ToPlayer-stop', _unactivate);	
+			$.subscribe('ToPlayer-pause', _unactivate);
 		}
 		$.subscribe('ctrl-a', function() {
 			if (!self.interactive) return;
@@ -108,7 +118,7 @@ define([
 	 * @param  {Boolean} ctrlPressed 
 	 */
 	NoteSpaceManager.prototype.onSelected = function(coords, ini, end, clicked, mouseUp, ctrlPressed) {
-		if (!this.interactive)	return;
+		if (!this.interactive) return;
 		var posCursor;
 		var coordsTop, coordsBottom;
 
@@ -116,11 +126,7 @@ define([
 		if (ctrlPressed){
 			posCursor = this.elemMng.getMergedCursors(posCursor, this.cursor.getPos());
 		}
-		if (posCursor) {
-			this.cursor.setPos(posCursor);
-			//when clicking on a note, if there is an audio player, cursor should be updated
-			$.publish('ToWave-setCursor', this.cursor.getPos()); // getPos() returns array, of two elements, each element will be one parameter
-		}
+		_changeCursorPosition.apply(this, [posCursor, mouseUp]);
 	};
 
 	/**
@@ -137,15 +143,14 @@ define([
 	 * @param  {CanvasContext} ctx
 	 */
 	NoteSpaceManager.prototype.drawCursor = function(ctx) {
-		if (this.noteSpace.length === 0) return;
+		if (this.noteSpace.length === 0 || (this.getType() === 'NOT_INTERACTIVE' && !this.playing)) return;
 		var position = this.cursor.getPos(),
 			saveFillColor = ctx.fillStyle,
 		 	areas = [];
-		
-		ctx.fillStyle = this.COLOR;
-		ctx.globalAlpha = 0.2;
 
 		if (position[0] !== null) {
+			ctx.fillStyle = this.COLOR;
+			ctx.globalAlpha = 0.2;
 			areas = this.elemMng.getElementsAreaFromCursor(this.noteSpace, position);
 			for (i = 0; i < areas.length; i++) {
 				ctx.fillRect(
@@ -179,7 +184,8 @@ define([
 	 */
 	NoteSpaceManager.prototype.disable = function() {
 		if (!this.playing){ 		//if 'NOT_INTERACTIVE' depends if playing
-			this.enabled = false;	
+			this.enabled = false;
+			_changeCursorPosition.apply(this, [[0,0]]);
 		}
 	};
 	/**

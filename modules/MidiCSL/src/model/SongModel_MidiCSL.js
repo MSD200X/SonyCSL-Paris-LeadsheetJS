@@ -122,7 +122,7 @@ define(['modules/MidiCSL/src/model/NoteModel_MidiCSL'], function(NoteModel_MidiC
 			timeSig = songModel.timeSignature.getBeats();
 			beatUnit = songModel.timeSignature.getBeatUnitQuarter();
 		}
-		for (var i = 0, c = 200; i < c; i++) {
+		for (var i = 0, c = songModel.getSongTotalBeats(); i < c; i++) {
 			if (i % timeSig === 0) {
 				notes = [105]; // A7
 			} else {

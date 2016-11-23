@@ -1,26 +1,28 @@
 define(['modules/core/src/SongBarsIterator', 'modules/core/src/SectionBarsIterator', 'underscore'], function(SongBarsIterator, SectionBarsIterator, _) {
 	/**
-    * 
+    * @param viewer LSViewer
     * @exports LSViewer/BarWidthManager
     */
-	function BarWidthManager(lineHeight, lineWidth, noteWidth, barsPerLine, marginTop, lastBarWidthRatio, marginLeft) {
-		if (lineHeight === undefined) throw "BarWidthManager - lineHeight not defined";
-		if (lineWidth === undefined) throw "BarWidthManager - lineWidth not defined";
-		if (noteWidth === undefined) throw "BarWidthManager - noteWidth not defined";
-		if (barsPerLine === undefined) throw "BarWidthManager - barsPerLine not defined";
-		if (marginTop === undefined) throw "BarWidthManager - marginTop not defined";
-
-		this.lastBarWidthRatio = lastBarWidthRatio || 1;
+	function BarWidthManager(dimParams, marginLeft) {
+		if (dimParams === undefined) throw "BarWidthManager constructor argument missing.";
 
 		this.WIDTH_FACTOR = 1.6; // factor by which we multiply the minimum width so that notes are not so crammed (always > 1)
+		this.marginChordFactor = 1.5;
+		this.noteProportion = 2; // relation we estimate between a note's width and the width of a key signature, a time signature, or a clef
 		this.barsStruct = [];
 
-		this.lineHeight = Number(lineHeight);
-		this.marginLeft = _.isUndefined(marginLeft) ? 8 : marginLeft;
-		this.lineWidth = Number(lineWidth) - this.marginLeft;
-		this.noteWidth = Number(noteWidth);
-		this.barsPerLine = Number(barsPerLine);
-		this.marginTop = Number(marginTop);
+		this.lineHeight = dimParams.lineHeight;
+		this.marginLeft = dimParams.marginLeft ? dimParams.marginLeft : 8;
+		this.noteWidth = dimParams.noteWidth;
+		this.barsPerLine = dimParams.barsPerLine;
+		this.marginTop = dimParams.marginTop;
+		this.voicesToDraw = dimParams.voicesToDraw;
+		this.keepConsistentWidths = dimParams.keepConsistentWidths
+
+		this.setLineWidth = function(lineWidth) {
+			this.lineWidth = lineWidth - this.marginLeft;
+		};
+		this.setLineWidth(dimParams.lineWidth);
 	}
 	/**
 	 * calculates the minimum width for each bar depending on the number of notes it has, and the length of chords
@@ -39,61 +41,42 @@ define(['modules/core/src/SongBarsIterator', 'modules/core/src/SectionBarsIterat
 			leftChordMargins = [],
 			barNotes,
 			barChords,
-			sectionIt,
-			chordWidth,
-			diff,
-			maxDiff,
-			chord,
-			marginChordFactor = 1.3; //always should be greater than 1
-		var oldCtxFont = ctx.font;
+			sectionIt; //always should be greater than 1
 
-		ctx.font = fontChord;
 		var songIt = new SongBarsIterator(song);
 
 		song.getSections().forEach(function(section) {
 			sectionIt = new SectionBarsIterator(section);
 			while (sectionIt.hasNext()) {
 				//get minimum notes width
-				barNotes = noteMng.getNotesAtCurrentBar(songIt);
-				width = (barNotes.length * self.noteWidth) * self.WIDTH_FACTOR;
-				var noteProportion = 2; // relation we estimate between a note's width and the with of a key signature, a time signature, or a clef
 				var structElemsWidth = 0; //width of structure related elements: clef and key  and time signatures.
+				barNotes = noteMng.getNotesAtCurrentBar(songIt);
+				if (self.voicesToDraw.indexOf('melody') !== -1) {
+					width = (barNotes.length * self.noteWidth) * self.WIDTH_FACTOR;
+				}
 				if (songIt.getBarIndex() === 0){
-					structElemsWidth = self.noteWidth * noteProportion; //if first bar we add space for clef and time signature (we consider clef and time signature as wide as a note)
+					structElemsWidth = self.noteWidth * self.noteProportion; //if first bar we add space for clef and time signature (we consider clef and time signature as wide as a note)
 					if (songIt.getBarKeySignature() !== 'C') {
-						structElemsWidth = self.noteWidth * noteProportion; // same for key signature (armure) if we are not in 'C'
+						structElemsWidth = self.noteWidth * self.noteProportion; // same for key signature (armure) if we are not in 'C'
 					}
 				} else {
 					if (songIt.doesTimeSignatureChange()){
-						structElemsWidth = self.noteWidth * noteProportion;
+						structElemsWidth = self.noteWidth * self.noteProportion;
 					}
 					if (songIt.doesKeySignatureChange()){
-						structElemsWidth = self.noteWidth * noteProportion;	
+						structElemsWidth = self.noteWidth * self.noteProportion;	
 					}
 				}
-				//get minimum chords width. strategy: we check if any chords of bar are longer than the space assigned for them, 
-				//if there are one or more, we get the longest difference and we widen ALL beats (this way we keep consistency between chord duration and chord space)
-				chordWidth = width / songIt.getBarTimeSignature().getBeats();
-				// we calculate chordWidth before aadding structElemsWidth
-				width += structElemsWidth;
-
-				barChords = chordsMng.getChordsByBarNumber(songIt.getBarIndex());
-				maxDiff = 0;
-				for (var i = 0; i < barChords.length; i++) {
-					chord = barChords[i];
-					//if chord is in last beat of measure or there is only one beat difference between next 
-					//(here we assume that a chord will not reach more than one chordspace, which is not always true, but rarely, we prefer this to not get too wide bars)
-					if (chord.isInLastMeasureBeat(songIt.getBarTimeSignature()) || (i < barChords.length - 1 && chord.getBeat() == barChords[i + 1].getBeat() - 1)) {
+				if (self.voicesToDraw.indexOf('chords') !== -1) {
+					//get minimum chords width. strategy: we check if any chords of bar are longer than the space assigned for them, 
+					barChords = chordsMng.getChordsByBarNumber(songIt.getBarIndex());
+					var maxChordWidth = 0;
+					for (var i = 0; i < barChords.length; i++) {
 						//we check if should be longer
-						diff = ctx.measureText(chord.toString()).width - chordWidth;
-						if (diff > 0 && diff > maxDiff) {
-							maxDiff = diff;
-						}
+						maxChordWidth = Math.max(maxChordWidth, ctx.measureText(barChords[i].toString()).width * self.marginChordFactor);
 					}
-				}
-				if (maxDiff !== 0) {
-					//here we widen ALL beats a maxDiff
-					width += maxDiff * marginChordFactor * songIt.getBarTimeSignature().getBeats();
+					width = Math.max(width ? width : 0, maxChordWidth * songIt.getBarTimeSignature().getBeats());
+					width += structElemsWidth;
 				}
 				minWidthList.push(width);
 				//left margin for chords and chords spaces
@@ -103,8 +86,6 @@ define(['modules/core/src/SongBarsIterator', 'modules/core/src/SectionBarsIterat
 			}
 
 		});
-		ctx.fond = oldCtxFont;
-
 		return {
 			minWidthList: minWidthList,
 			leftChordMargins: leftChordMargins
@@ -265,9 +246,10 @@ define(['modules/core/src/SongBarsIterator', 'modules/core/src/SectionBarsIterat
 		//we shorten last bar by lastBarWidthRatio
 		var lastRow = finalWidths.length - 1,
 			lastColumn = finalWidths[lastRow].length - 1;
-		finalWidths[lastRow][lastColumn] *= this.lastBarWidthRatio;
+		// finalWidths[lastRow][lastColumn] *= this.lastBarWidthRatio;
 		return finalWidths;
 	};
+
 	BarWidthManager.prototype.setBarsStruct = function(barsStruct) {
 		this.barsStruct = barsStruct;
 	};
@@ -280,15 +262,17 @@ define(['modules/core/src/SongBarsIterator', 'modules/core/src/SectionBarsIterat
 	BarWidthManager.prototype.calculateBarsStructure = function(song, noteMng, chordsMng, ctx, fontChords) {
 		var obj = this.getMinWidthList(song, noteMng, chordsMng, ctx, fontChords);
 
-		this.leftChordMargins = obj.leftChordMargins; 
-
-		var minWidthList = obj.minWidthList,
-			pickupAtStart;
-
-		if (typeof song.getSection(0) !== "undefined") {
-			pickupAtStart = song.getSection(0).getNumberOfBars() == 1;
+		this.leftChordMargins = obj.leftChordMargins;
+		// keep only biggest width if we want to be consistent
+		if (this.keepConsistentWidths) {
+			maxWidth = _.max(obj.minWidthList);
+			_.forEach(obj.minWidthList, function(width, index) {
+				obj.minWidthList[index] = maxWidth;
+			});
 		}
-		var minWidthPerLineList = this.assignBarsToLines(minWidthList, pickupAtStart);
+
+		var pickupAtStart = song.getSection(0) !== "undefined" && song.getSection(0).getNumberOfBars() === 1;
+		var minWidthPerLineList = this.assignBarsToLines(obj.minWidthList, pickupAtStart);
 		this.setBarsStruct(this.getWidths(minWidthPerLineList));
 
 	};

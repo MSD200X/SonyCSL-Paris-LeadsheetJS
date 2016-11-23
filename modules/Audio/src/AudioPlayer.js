@@ -62,20 +62,30 @@ define(
 					$.publish("Audioplayer-multitrackMixerInserted", {$element: self.$tplRendered});
 				}
 			});
-			$.subscribe("AudioCursor-clickedAudio", function(el, posCursor) {
-				self.startPos = posCursor;
+			$.subscribe("AudioCursor-clickedAudio", function(el, startTime) {
+				self.startPos = startTime;
 			 	self.audio.disableLoop();
+				if (self.audio.isPlaying){
+					self.audio.pausedAt = null;
+				 	self.audio.stop();
+			 		self.audio.play(self.startPos);
+				 }
 			});
 			$.subscribe("AudioCursor-selectedAudio", function(el, startPos, endPos) {
+				console.log("AudioCursor-selectedAudio");
+				console.log(arguments);
 				self.startPos = startPos;
 				self.endPos = endPos;
 				self.audio.loop(startPos, endPos);
 			});
 			$.subscribe("ToPlayer-play", function() {
-				self.audio.play(self.startPos);
+				if (self.audio.pausedAt) {
+					self.audio.play();
+				} else {
+					self.audio.play(self.startPos);
+				}
 			});
 			$.subscribe("ToPlayer-pause", function() {
-				self.startPos = null;
 				self.audio.pause();
 			});
 			$.subscribe('ToPlayer-onVolume', function(el, volume) {
@@ -91,7 +101,6 @@ define(
 				self.startPos = null;
 			});
 			$.subscribe("ToPlayer-stop", function() {
-				self.startPos = null;
 				self.audio.stop();
 			});
 			$.subscribe('ToAudioPlayer-disable', function() {
