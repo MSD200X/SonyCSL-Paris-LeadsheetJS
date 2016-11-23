@@ -55,14 +55,12 @@ define([
 				this.tempo = songModel.getTempo();
 			}
 			this.soundfontPath = soundfontPath;
-
-			var initVolume;
 			if (options.volume !== undefined) {
 				// case that developper explicitly declared volume
-				initVolume = options.volume;
+				this.volumeFactor = options.volume;
 			} else {
 				// natural case (it use storage item to get last user volume)
-				initVolume = this.initVolume(0.7);
+				this.volumeFactor = this.initVolume(0.7);
 			}
 			this.cursorModel = options.cursorModel;
 			this.cursorNoteModel = options.cursorNoteModel;
@@ -143,12 +141,14 @@ define([
 
 		PlayerModel_MidiCSL.prototype.mute = function() {
 			if (this.playState) {
-				this.setVolume(0);
+				this.volumeFactor = 0;
+				$.publish('PlayerModel-onvolumechange', this.volumeFactor);
 			}
 		};
 
 		PlayerModel_MidiCSL.prototype.unmute = function() {
-			this.setVolume(this.chords.tmpVolume);
+			this.volumeFactor = this.initVolume();
+			$.publish('PlayerModel-onvolumechange', this.volumeFactor);
 		};
 
 		PlayerModel_MidiCSL.prototype.doMetronome = function() {
@@ -165,41 +165,23 @@ define([
 			$.publish('PlayerModel-toggleMetronome', true);
 		};
 
-		PlayerModel_MidiCSL.prototype.initVolume = function(volume, force) {
+		PlayerModel_MidiCSL.prototype.initVolume = function(volume) {
 			var oldVolume = localStorage.getItem("player-volume");
 			if (oldVolume === null) {
 				return volume;
+			} else {
+				$('#volume_controller').val(oldVolume*100);
+				return oldVolume;
 			}
-			return oldVolume;
 		};
 
 		PlayerModel_MidiCSL.prototype.setVolume = function(volume) {
 			if (typeof volume === "undefined" || isNaN(volume)) {
 				throw 'PlayerModel_MidiCSL - setVolume - volume must be a number ' + volume;
 			}
-			// $.publish('PlayerModel-onvolumechange', volume);
-			this.setMelodyVolume(volume);
-			this.setChordsVolume(volume);
+			$.publish('PlayerModel-onvolumechange', volume);
+			this.volumeFactor = volume;
 			localStorage.setItem("player-volume", volume);
-		};
-
-
-
-		PlayerModel_MidiCSL.prototype.setChordsVolume = function(volume) {
-			if (typeof volume === "undefined" || isNaN(volume)) {
-				throw 'PlayerModel_MidiCSL - setChordsVolume - volume must be a number ' + volume;
-			}
-			/*MIDI.setVolume(1, volume * 127);*/
-			this.chords.volume = volume;
-		};
-
-
-		PlayerModel_MidiCSL.prototype.setMelodyVolume = function(volume) {
-			if (typeof volume === "undefined" || isNaN(volume)) {
-				throw 'PlayerModel_MidiCSL - setMelodyVolume - volume must be a number ' + volume;
-			}
-			/*MIDI.setVolume(0, volume * 127);*/
-			this.melody.volume = volume;
 		};
 
 
@@ -325,7 +307,7 @@ define([
 							return this.noteModel.getMidiNote();
 						},
 						getVolume: function() {
-							return this.volume;
+							return this.volume * self.volumeFactor;
 						},
 						getChannel: function() {
 							return this.channel;
@@ -353,9 +335,6 @@ define([
 					});
 					var metronomeMidiObj = _.extendOwn(Object.create(midiObj), {
 						channel: 9,
-						getVolume: function() {
-	                        return this.volume * this.playerModel.chords.volume;
-                        },
 						volume: 80,
 						setPlay: function(play) {
 							this.doPlay = !!play;
