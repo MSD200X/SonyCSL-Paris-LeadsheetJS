@@ -127,7 +127,7 @@ define([
 			//ScoreComments
 			if (SCORE){
 				// TODO find a better way to redraw comments
-				$.subscribe('LSViewer-drawEnd', handleScoreComments);
+				// $.subscribe('LSViewer-drawEnd', handleScoreComments);
 			}
 			//comments are activated by K-key
 			$.subscribe('K-key', function(el){

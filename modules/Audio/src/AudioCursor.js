@@ -34,21 +34,23 @@ define([
 		});
 		$.subscribe("NoteSpace-CursorPosChanged", function(el, cursorStart, cursorEnd) {
 			// first convert to unfolded indexes
-			cursorStart = self.audioController.song.notesMapper.getFirstUnfoldedIdx(cursorStart);
-			cursorEnd = self.audioController.song.notesMapper.getFirstUnfoldedIdx(cursorEnd);
-			var beats = self.audioController.song.getComponent('notes').getBeatIntervalByIndexes(cursorStart, cursorEnd);
-			var startTime = self.audioController.beatDuration * (beats[0] - 1);
-			var endTime = self.audioController.beatDuration * (_.last(beats) - 1);
-			if (cursorStart === cursorEnd) {
-				$.publish('AudioCursor-clickedAudio', startTime);
-			} else {
-				$.publish('AudioCursor-selectedAudio', [startTime, endTime]);
-			}
-			//if audio is not being drawn, no need to move audio cursor
-			if (!self.audioDrawer || !self.audioDrawer.isEnabled) return;
-			if (self.cursor) {
-				self.cursor.setPos([startTime, endTime]); //we equal cursor start and end cursor, because this way the player won't loop
-				self.updateCursorPlaying(startTime);
+			if (self.audioController.isEnabled) {
+				cursorStart = self.audioController.song.notesMapper.getFirstUnfoldedIdx(cursorStart);
+				cursorEnd = self.audioController.song.notesMapper.getFirstUnfoldedIdx(cursorEnd);
+				var beats = self.audioController.song.getComponent('notes').getBeatIntervalByIndexes(cursorStart, cursorEnd);
+				var startTime = self.audioController.beatDuration * (beats[0] - 1);
+				var endTime = self.audioController.beatDuration * (_.last(beats) - 1);
+				if (cursorStart === cursorEnd) {
+					$.publish('AudioCursor-clickedAudio', startTime);
+				} else {
+					$.publish('AudioCursor-selectedAudio', [startTime, endTime]);
+				}
+				//if audio is not being drawn, no need to move audio cursor
+				if (!self.audioDrawer || !self.audioDrawer.isEnabled) return;
+				if (self.cursor) {
+					self.cursor.setPos([startTime, endTime]); //we equal cursor start and end cursor, because this way the player won't loop
+					self.updateCursorPlaying(startTime);
+				}
 			}
 		});
 

@@ -394,11 +394,6 @@ define([
 		}
 	};
 
-	NoteEditionController.prototype.transposeBy = function(interval, direction) {
-		var selNotes = this._getSelectedNotes();
-		
-	};
-
 	NoteEditionController.prototype.addAccidental = function(accidental) {
 		var selNotes = this._getSelectedNotes();
 		var note;

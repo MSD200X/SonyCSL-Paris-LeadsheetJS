@@ -67,7 +67,7 @@ define([
 		this.htmlInput = new HtmlInputElement(this.viewer, this.CL_NAME, this.textView.getArea());
 		var input = this.htmlInput.input;
 
-		input.focus();
+		// input.focus();
 		input.val(inputVal);
 		$(input).keyup(function(evt) {
 			var keyCode = (evt === null) ? event.keyCode : evt.keyCode;
@@ -81,7 +81,6 @@ define([
 		if (this.suggestions) {
 			input.devbridgeAutocomplete({
 				'lookup': this.suggestions,
-				'width': 500,
 				lookupFilter: function(suggestion, originalQuery, queryLowerCase) {
 					return suggestion.value.toLowerCase().indexOf(queryLowerCase) === 0;
 				},

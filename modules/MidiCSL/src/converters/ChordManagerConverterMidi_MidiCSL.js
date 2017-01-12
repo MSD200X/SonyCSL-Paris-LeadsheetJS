@@ -52,6 +52,7 @@ define([
 
 			while (songIt.hasNext()) {
 				chordsInBar = chordManager.getChordsByBarNumber(songIt.getBarIndex());
+				barUnitQuarterBeat = songIt.getBarTimeSignature().getQuarterBeats();
 				barDuration = songIt.getBarTimeSignature().getQuarterBeats();
 				if (chordsInBar.length === 0) {
 					// case there is no chord in bar, we repeat previous one, if there is no previous one we just continue to next bar
@@ -60,13 +61,12 @@ define([
 						chords.push(getChordAsMidi(currentTime, duration, midiNotes));
 					}
 				} else {
-					var nextBeatTime, chordCurrentTime,
-						barUnitQuarterBeat = songIt.getBarTimeSignature().getBeatUnitQuarter();
+					var nextBeatTime, chordCurrentTime;
 
 					for (var i = 0; i < chordsInBar.length; i++) {
 
-						chordCurrentTime = currentTime + (chordsInBar[i].getBeat() - 1) * barUnitQuarterBeat;
-						nextBeatTime = (i < chordsInBar.length - 1) ? (chordsInBar[i + 1].getBeat() - 1) * barUnitQuarterBeat : barDuration;
+						chordCurrentTime = currentTime + (chordsInBar[i].getBeat() - 1);
+						nextBeatTime = (i < chordsInBar.length - 1) ? (chordsInBar[i + 1].getBeat() - 1) : barDuration;
 						duration = currentTime + nextBeatTime - chordCurrentTime;
 						midiNotes = ChordConverterMidi_MidiCSL.exportToMidiCSL(chordsInBar[i]);
 						chords.push(getChordAsMidi(chordCurrentTime, duration, midiNotes));

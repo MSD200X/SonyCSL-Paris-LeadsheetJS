@@ -6,10 +6,14 @@ define(
 		 * @param {Number} timeEndSong given in seconds 
 		 */
 		function AudioController(song) {
-			this.song = song ? song.clone() : false;
-			if (this.song) {
-				this.song.unfold();
-			}
+			var _setSong = function(songModel) {
+				this.song = songModel ? songModel.clone() : this.song;
+				if (songModel) {
+					this.song.unfold();
+				}
+			};
+			this.song = false;
+			_setSong(song);
 			this.audioCtx = new AudioContext();
 			this.sources = [];
 			this.isEnabled = false; //accessed publicly
@@ -28,6 +32,10 @@ define(
 			this.timeEndSong;
 			// default tempo 120
 			this._setParams(120);
+			var self = this;
+			$.subscribe('ToViewer-draw', function(el, songModel) {
+				_setSong.apply(self, [songModel]);
+			});
 		}
 
 		var _updateLoopOnSources = function() {

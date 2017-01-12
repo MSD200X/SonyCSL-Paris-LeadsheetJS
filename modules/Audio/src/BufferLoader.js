@@ -22,20 +22,27 @@ define([],
         }
       };
 
+      var _manageError = function() {
+        console.error('error decoding file data: ' + url);
+        loader.bufferList.splice(index, 1);
+      };
+
       request.onload = function() {
         // Asynchronously decode the audio file data in request.response
         loader.context.decodeAudioData(
           request.response,
           function(buffer) {
             if (!buffer) {
-              console.error('error decoding file data: ' + url);
-              return;
+              _manageError();
+            } else {
+              loader.bufferList[index] = buffer;
             }
-            loader.bufferList[index] = buffer;
             _callOnLoad();
           },
           function(error) {
+            _manageError();
             console.error('decodeAudioData error', error);
+            _callOnLoad();
           }
         );
       };

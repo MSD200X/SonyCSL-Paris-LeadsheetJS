@@ -301,17 +301,19 @@ define([
 
 			if (notesIt.index >= start){
 				newNote = note.clone();
-				accidental = accidental || barAcc.getAccidental(note);	
-								
-				if (!accidental){
-					var keySignature = new KeySignatureModel(notesIt.songIt.getBarKeySignature());	
-					accidental = keySignature.getPitchAccidental(note.getPitchClass());
-				}
-				if (accidental) {
-					if (accidental == "n"){
-						accidental = "";
-					} 	
-					newNote.setAccidental(accidental);
+				if (!newNote.isRest) {
+					accidental = accidental || barAcc.getAccidental(note);	
+									
+					if (!accidental){
+						var keySignature = new KeySignatureModel(notesIt.songIt.getBarKeySignature());	
+						accidental = keySignature.getPitchAccidental(note.getPitchClass());
+					}
+					if (accidental) {
+						if (accidental == "n"){
+							accidental = "";
+						} 	
+						newNote.setAccidental(accidental);
+					}
 				}
 				newNoteMng.addNote(newNote);
 			}

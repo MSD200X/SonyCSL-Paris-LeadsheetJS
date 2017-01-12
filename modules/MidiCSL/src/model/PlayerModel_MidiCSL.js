@@ -247,7 +247,7 @@ define([
 			if (typeof tempo === "undefined" || isNaN(tempo)) {
 				tempo = 120;
 			}
-			this.emptyPlayNotes();
+			this.stopAllNotes();
 			var self = this;
 			this.playState = true;
 			$.publish('PlayerModel-onplay');
@@ -335,6 +335,9 @@ define([
 					});
 					var metronomeMidiObj = _.extendOwn(Object.create(midiObj), {
 						channel: 9,
+						getVolume: function() {
+	                        return this.volume * this.playerModel.chords.volume * self.volumeFactor;
+                        },
 						volume: 80,
 						setPlay: function(play) {
 							this.doPlay = !!play;
@@ -415,10 +418,6 @@ define([
 				window.clearTimeout(this.noteTimeOut[i]);
 			}
 			this.noteTimeOut = [];
-		};
-
-		PlayerModel_MidiCSL.prototype.emptyPlayNotes = function() {
-			this.stopAllNotes();
 		};
 
 		PlayerModel_MidiCSL.prototype.pause = function() {

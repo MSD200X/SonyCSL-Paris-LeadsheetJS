@@ -92,6 +92,7 @@ define([
 			
 			while (notesIt.hasNext()){
 				note = playingNotes.getNote(notesIt.index);
+				note.barDuration = notesIt.songIt.getBarTimeSignature().getBeats();
 				duration = note.getDuration();
 				var midiNote = getMidiPitch(note);
 				if (!note.isTie()){

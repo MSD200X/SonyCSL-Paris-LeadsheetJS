@@ -9,7 +9,7 @@ define(['jquery', 'pubsub'], function($, pubsub) {
     * it creates an hover canvas that is fast and repetively drawn, it's usefull to draw cursor or selection for eg
     * @exports LSViewer/CanvasLayer
     */
-	function CanvasLayer(viewer, detectEventOnAllDocument, interactiveCanvasLayer) {
+	function CanvasLayer(viewer, interactiveCanvasLayer) {
 		if (!viewer.canvas) {
 			throw "LSViewer cannot create layer because canvas does not exist";
 		}
@@ -23,7 +23,6 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 		this.mouseCoordsEnd = null;
 		this.coords = {};
 		this.mouseDown = false;
-		this.detectEventOnAllDocument = (detectEventOnAllDocument !== undefined) ? detectEventOnAllDocument : false;
 		if (interactiveCanvasLayer) this._listenEvents(canvasLayer);
 		this.elems = {}; //elements to be added (can be CLICKABLE or CURSOR)
 		this.order = []; //we keep trace of order in which elements are added, to decide which should be prioritized on click
@@ -217,26 +216,6 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 			}
 		}
 
-		if (this.detectEventOnAllDocument) {
-			$('html').on('mousedown', function(evt) {
-				mouseDown(evt);
-				//evt.stopImmediatePropagation();
-			});
-			// Mouseup on canvas is usefull to allow unselect
-			$('html').on('mouseup',function(evt) {
-				mouseUp(evt);
-				//evt.stopImmediatePropagation();
-			});
-		} else {
-			$(this.canvasLayer).mousedown(function(evt) {
-				mouseDown(evt);
-			});
-			// Mouseup on canvas is usefull to allow unselect
-			$(this.canvasLayer).mouseup(function(evt) {
-				mouseUp(evt);
-			});
-		}
-
 		function mouseDown(evt) {
 			var d = evt.srcElement || evt.target;
 			if (d.tagName.toUpperCase() === 'TEXTAREA' || d.tagName.toUpperCase() === 'INPUT' || d.tagName.toUpperCase() === 'SELECT' || d.tagName.toUpperCase() === 'OPTION') {
@@ -249,12 +228,18 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 		}
 
 		function mouseUp(evt) {
-			self.mouseDown = false;
-			var isClick = self.mouseDidntMove();
-			if (isTargetValid(evt)) {
-				selection(isClick, true, evt);
+			if (self.mouseDown) {
+				self.mouseDown = false;
+				var isClick = self.mouseDidntMove();
+				if (isTargetValid(evt)) {
+					selection(isClick, true, evt);
+				}
 			}
 		}
+		$(this.canvasLayer).mousedown(mouseDown);
+		// Mouseup on canvas is usefull to allow unselect
+		$(this.canvasLayer).mouseup(mouseUp);
+
 		// check if we click on something that is canvas or that contain canvas to prevent click on something that is above a player or menu etc
 		function isTargetValid(evt) {
 			if (evt.target.id === $(self.canvasLayer).attr('id') || $(evt.target).find($(self.canvasLayer)).length > 0) {
@@ -263,6 +248,8 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 			return false;
 		}
 
+
+		var debouncedPointerInPath = _.debounce(setPointerIfInPath, 100);
 		$(this.canvasLayer).on('mousemove',function(evt) {
 			//draw cursor selection
 			var xy = self._getXandY($(self.canvasLayer), evt);
@@ -275,14 +262,8 @@ define(['jquery', 'pubsub'], function($, pubsub) {
 					selection(false, false, evt);
 				}
 			}
-			setPointerIfInPath(xy);
+			debouncedPointerInPath(xy);
 
-		});
-		$.subscribe('ctrlPressed', function(){
-			self.ctrlPressed = true;
-		});
-		$.subscribe('ctrlUnpressed', function(){
-			self.ctrlPressed = false;
 		});
 		$.subscribe('CanvasLayer-refresh', function() {
 			self.refresh();
