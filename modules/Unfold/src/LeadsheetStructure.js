@@ -43,10 +43,10 @@ define([
 			return endLabels.hasOwnProperty(label);
 		};
 		/**
-		 
+
 		 * @param  {Object} label         {label: 'SEGNO', type:'start'};
-		 * @param  {Integer} sectionNumber 
-		 * @param  {Integer} barNumber     
+		 * @param  {Integer} sectionNumber
+		 * @param  {Integer} barNumber
 		 */
 		var createLabel = function(label, sectionNumber, barNumber) {
 			if (label.type === 'start') {
@@ -180,7 +180,7 @@ define([
 				if (!self.hasEndLabel(EndLabel.TOCODA)) {
 					return false;
 				}
-				//NO ENTIENDO 
+				//NO ENTIENDO
 				toCoda1Point = EndLabel.get(EndLabel.TOCODA);
 				toCodaPoint = createEndLabel(toCodaLabel, toCoda1Point.section, toCoda1Point.bar);
 			}
@@ -365,7 +365,7 @@ define([
 		}
 		//Init function IIFE
 		(function() {
-			
+
 			if (self.sections.length === 0) {
 				return;
 			}
@@ -384,7 +384,7 @@ define([
 					console.log('Error on Leadsheet structure Initialization.');
 					console.log(e);
 				}
-			
+
 			}
 			createEndLabel(EndLabel.END, lastSectionEndPoint.section, lastSectionEndPoint.bar);
 		}());

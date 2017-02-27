@@ -10,6 +10,7 @@ define([
 	 */
 	function HistoryView(parentHTML, displayHistory, displayTime) {
 		this.el = undefined;
+		this.hiddenElements = [];
 		this.parentHTML = (parentHTML) ? parentHTML : $('#rightPanel');
 		var tabsWrapper = this.parentHTML.find('.nav.nav-tabs');
 		tabsWrapper.append('<li class="active"><a data-toggle="tab" href="#history-tab-pane">History</a></li>');
@@ -39,6 +40,9 @@ define([
 		if (model) {
 			var history = model.getSavedHistory();
 			for (var i = 0, c = history.length; i < c; i++) {
+				if (this.hiddenElements.indexOf(i) !== -1) {
+					continue;
+				}
 				classCurrent = "";
 				if (i == model.currentPosition) {
 					classCurrent = "current";
@@ -49,6 +53,9 @@ define([
 				}
 				if (this.displayTime) {
 					text += history[i].time;
+				}
+				if (i > 0 && i !== c - 1) {
+					text += '<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
 				}
 				$historyList.append('<li class="' + classCurrent + '" data-history="' + i + '">' + text + '</li>');
 			}
@@ -72,6 +79,14 @@ define([
 		this.parentHTML.on('click', ".history_ul li", function() {
 			var indexItem = parseInt($(this).attr('data-history'), 10);
 			$.publish('HistoryView-selectHistory', indexItem);
+		});
+		this.parentHTML.on('click', 'button.close span', function() {
+			var $wrapper = $(this).parents('li');
+			if (!$wrapper.hasClass('current')) {
+				self.hiddenElements.push($wrapper.data('history'));
+				$wrapper.hide();
+				return false;
+			}
 		});
 	};
 

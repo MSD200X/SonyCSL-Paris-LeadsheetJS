@@ -39,7 +39,6 @@ define([
 		}
 		if (Object.getPrototypeOf(repetition) === DaAlRepetition)
 			this.repetitions.splice(index, 1);
-
 		return repetition;
 	};
 	return RepetitionsHolder;

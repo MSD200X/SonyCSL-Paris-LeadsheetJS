@@ -2,7 +2,7 @@ define(['modules/core/src/NoteModel'], function(NoteModel) {
 	var NoteModel_MusicXML = {};
 
 	NoteModel_MusicXML.importFromMusicXML = function(MusicXMLNote, note) {
-		if(typeof note === "undefine" || !(note instanceof NoteModel)) {
+		if(!note || !(note instanceof NoteModel)) {
 			note = new NoteModel();
 		}
 
@@ -14,7 +14,7 @@ define(['modules/core/src/NoteModel'], function(NoteModel) {
 		}
 
 		var duration = MusicXMLNote.duration;
-		if ((duration.indexOf("r") != -1)) {
+		if ((duration.indexOf("r") !== -1)) {
 			note.setDuration(duration.substring(0, duration.length - 1));
 			note.isRest = true;
 		} else {
@@ -22,16 +22,14 @@ define(['modules/core/src/NoteModel'], function(NoteModel) {
 			note.isRest = false;
 		}
 
-		if (MusicXMLNote.keys.length > 1) {
-			MusicXMLNote.keys = NoteUtils.sortPitches(MusicXMLNote.keys);
-		}
-
-		var parsedNote;
-		for (var i = 0, c = MusicXMLNote.keys.length; i < c; i++) {
-			parsedNote = string2Obj(MusicXMLNote.keys[i]);
-			note.pitchClass[i] = parsedNote.pitchClass;
-			note.accidental[i] = parsedNote.accidental;
-			note.octave[i] = parsedNote.octave;
+		if (MusicXMLNote.keys) {
+			var parsedNote;
+			for (var i = 0, c = MusicXMLNote.keys.length; i < c; i++) {
+				parsedNote = string2Obj(MusicXMLNote.keys[i]);
+				note.pitchClass[i] = parsedNote.pitchClass;
+				note.accidental[i] = parsedNote.accidental;
+				note.octave[i] = parsedNote.octave;
+			}
 		}
 
 		note.setDot(MusicXMLNote.dot);

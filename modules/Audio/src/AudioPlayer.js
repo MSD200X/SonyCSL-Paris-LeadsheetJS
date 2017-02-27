@@ -131,7 +131,7 @@ define(
 			$(document).on('click', 'button.btn-mute-track', function() {
 				var $btn = $(this);
 				$btn.toggleClass('active');
-				var gainIndex = $btn.parents('.track-gain-wrapper').index();
+				var gainIndex = $btn.data('index');
 				if ($btn.hasClass('active')) {
 					self._setGainValue(self.muteValue, self.gains[gainIndex]);
 					self.audio.sources[gainIndex].isMuted = true;
@@ -144,7 +144,7 @@ define(
 				var $btn = $(this);
 				$('button.btn-solo-track.active').not(this).removeClass('active');
 				$btn.toggleClass('active');
-				var gainIndex = $btn.parents('.track-gain-wrapper').index();
+				var gainIndex = $btn.data('index');
 				_.forEach(self.gains, function(gainNode, index) {
 					// default rule
 					var newVolume = self.audio.sources[index].isMuted ? self.muteValue : self.audio.sources[index].gain;

@@ -54,7 +54,6 @@ define([
 	PlayerView.prototype.initController = function() {
 		var self = this;
 		$('#play_button').click(function() {
-			
 			var tempo = self.getTempo();
 			$.publish('ToPlayer-play', tempo);
 		});

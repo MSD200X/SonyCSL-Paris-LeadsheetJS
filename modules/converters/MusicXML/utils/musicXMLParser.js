@@ -1,4 +1,6 @@
-define(function(require) {
+define(
+	['vexflow', 'utils/NoteUtils'],
+	function(Vex, NoteUtils) {
 
 	/**
 	 * VexFlow MusicXML - DOM-based MusicXML backend for VexFlow Documents.
@@ -172,17 +174,28 @@ define(function(require) {
 		return isNaN(num) ? null : num;
 	};
 
+	// fill measures with needed rests to have the right number of beats
+	MusicXMLParser.prototype.addNeededDurations = function(measure, p, notesBeatDuration) {
+		if (notesBeatDuration < measure.part[p].measureInfos.time.num_beats) {
+			var durationsToAdd = NoteUtils.getNotesDurationsToFillDuration(measure.part[p].measureInfos.time.num_beats - notesBeatDuration);
+			for (var i in durationsToAdd) {
+				measure.part[p].notes.unshift({
+					duration: NoteUtils.getStringFromBeatDuration(durationsToAdd[i]) + 'r',
+					chord: false
+				});
+			}
+		}
+		return measure;
+	};
+
 	MusicXMLParser.prototype.getMeasure = function(m) {
-		var measure_attrs = this.getAttributes(m, 0);
-		var time = measure_attrs.time;
 		var measureInfos = {
-			'time': time,
+			time: this.getAttributes(m, 0).time,
 		};
 		var measure = {
 			part: [],
 		};
-		var numParts = this.measures[m].length;
-		for (var p = 0; p < numParts; p++) {
+		for (var p = 0; p < this.measures[m].length; p++) {
 			measure.part[p] = {};
 			var attrs = this.getAttributes(m, p);
 			if (typeof attrs.clef == "string") measureInfos.clef = attrs.clef;
@@ -190,26 +203,31 @@ define(function(require) {
 
 			measureInfos.numberOfStaves = this.numStaves[p];
 			measureInfos.stave = [];
-			if (attrs.clef instanceof Array)
+			if (attrs.clef instanceof Array) {
 				for (var s = 0; s < this.numStaves[p]; s++) {
 					measureInfos.stave[s] = {
 						clef: attrs.clef[s]
 					};
 				}
+			}
 			measure.part[p].measureInfos = measureInfos;
 			measure.part[p].notes = [];
 			var noteElems = this.measures[m][p].getElementsByTagName("note");
+			var notesBeatDuration = 0;
 			for (var i = 0; i < noteElems.length; i++) {
 				var noteObj = this.parseNote(noteElems[i], attrs);
+				notesBeatDuration += NoteUtils.getBeatFromStringDuration(noteObj.duration) * (noteObj.dot ? 1.5 : 1);
+
+				if (noteObj.rest) noteObj.duration += "r";
 				measure.part[p].notes.push(noteObj);
 				if (noteObj.grace) continue; // grace note requires VexFlow support
 			}
-
+			// Song Model need to have all beats in a measure because notes and bars are not dependent
+			measure = this.addNeededDurations(measure, p, notesBeatDuration);
 			measure.part[p].chords = [];
 			var chordElems = this.measures[m][p].getElementsByTagName("harmony");
 			for (var i = 0, c = chordElems.length; i < c; i++) {
-				var chordObj = this.parseChord(chordElems[i], attrs);
-				measure.part[p].chords.push(chordObj);
+				measure.part[p].chords.push(this.parseChord(chordElems[i], attrs));
 			}
 		}
 		return measure;
@@ -231,8 +249,7 @@ define(function(require) {
 						this.numStaves[partNum] = parseInt(attr.textContent);
 					break;
 				case "key":
-					attrObject = this.getKeySignature(parseInt(attr.getElementsByTagName(
-						"fifths")[0].textContent));
+					attrObject = this.getKeySignature(parseInt(attr.getElementsByTagName("fifths")[0].textContent));
 					break;
 				case "time":
 					attrObject = (attr.getElementsByTagName("senza-misura").length > 0) ? {
@@ -279,6 +296,17 @@ define(function(require) {
 			rest: false,
 			chord: false
 		};
+		var notesTypesDurations = {
+			'whole': 	"w",
+			'half': 	"h",
+			'quarter': 	"q",
+			'eighth': 	"8",
+			'16th': 	"16",
+			'32nd': 	"32",
+			'64th': 	"64",
+			'128th': 	"128",
+			'256th': 	"256"
+		};
 		noteObj.tickMultiplier = 1;
 		noteObj.tuplet = null;
 		Array.prototype.forEach.call(noteElem.childNodes, function(elem) {
@@ -306,29 +334,8 @@ define(function(require) {
 					noteObj.keys = [step + "/" + octave.toString()];
 					break;
 				case "type":
-					var type = elem.textContent;
 					// Look up type
-					noteObj.duration = {
-						/*"whole": "1",
-						"half": "2",
-						"quarter": "4",
-						"eighth": "8",
-						"16th": "16",
-						"32nd": "32",
-						"64th": "64",
-						"128th": "128",
-						"256th": "256"*/
-						"whole": "w",
-						"half": "h",
-						"quarter": "q",
-						"eighth": "8",
-						"16th": "16",
-						"32nd": "32",
-						"64th": "64",
-						"128th": "128",
-						"256th": "256"
-					}[type];
-					if (noteObj.rest) noteObj.duration += "r";
+					noteObj.duration = notesTypesDurations[elem.textContent];
 					break;
 				case "dot": // Always follow type; noteObj.duration exists
 					/*var duration = noteObj.duration,

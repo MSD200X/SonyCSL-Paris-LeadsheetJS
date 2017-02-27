@@ -22,6 +22,7 @@ define([
 	PlayerController.prototype.initSubscribe = function() {
 		var self = this;
 		$.subscribe('ToPlayer-play', function(el, tempo) {			
+			self.enable();
 			self.play(tempo);
 		});
 		$.subscribe('ToPlayer-playFromPercent', function(el, obj) {
@@ -155,7 +156,11 @@ define([
 	};
 
 	PlayerController.prototype.enable = function() {
-		this.model.enable();
+		if ($("input[name=typeSwitch][value=midi]").prop('checked')) {
+			this.model.enable();
+		} else {
+			this.model.disable();
+		}
 	};
 
 	PlayerController.prototype.disable = function() {

@@ -49,6 +49,7 @@ define(['underscore'], function(_) {
 		"32":  	0.125,
 		"64":  0.0625
 	};
+	NoteUtils.DURATIONS_SORTED = _.values(NoteUtils.DURATIONS).sort(function(a, b) { return a<b;});
 
 	NoteUtils.INV_DURATIONS = _.invert(NoteUtils.DURATIONS);
 	
@@ -83,6 +84,27 @@ define(['underscore'], function(_) {
 		return NoteUtils.DURATIONS[string];		
 	};
 	
+	NoteUtils.getNotesDurationsToFillDuration = function(durationToFill) {
+		var durations = [];
+		var pushDuration = function(durationToPush) {
+			durations.push(durationToPush);
+			durationToFill -= durationToPush;	
+		};
+		for (var i in NoteUtils.DURATIONS_SORTED) {
+			if (durationToFill >= NoteUtils.DURATIONS_SORTED[i]) {
+				var coef = 1;
+				if (durationToFill % NoteUtils.DURATIONS_SORTED[i] === 0) {
+					coef = durationToFill / NoteUtils.DURATIONS_SORTED[i];
+				}
+				pushDuration(coef * NoteUtils.DURATIONS_SORTED[i]);
+				if (durationToFill === 0) {
+					break;
+				}
+			}
+		}
+		return durations;
+	};
+
 	/**
 	 * sorting pitches in case of polyphony because Vexflow adds accidentals in order relating to pitch order,
 	 * not to the actual array order

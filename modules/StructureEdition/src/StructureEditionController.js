@@ -18,7 +18,7 @@ define([
 	'modules/core/src/PitchClass',
 	'modules/Unfold/src/UnfoldingManager',
 	'pubsub',
-], function($, Mustache, EditionControllerInterface, CursorModel, SongModel, SectionModel, NoteManager, NoteModel, SongBarsIterator, TimeSignatureModel, SongConverterMidi_MidiCSL, NoteUtils, 
+], function($, Mustache, EditionControllerInterface, CursorModel, SongModel, SectionModel, NoteManager, NoteModel, SongBarsIterator, TimeSignatureModel, SongConverterMidi_MidiCSL, NoteUtils,
 			UserLog, Midi, Intervals, Note, PitchClass, UnfoldingManager, pubsub) {
 	/**
 	 * StructureEditionController manages all structure edition function
@@ -78,7 +78,7 @@ define([
 			UserLog.logAutoFade('error', "Cannot add new section in first bar of a Section");
 			return false;
 		}
-		
+
 		var section = this.songModel.getSection(sectionNumber);
 		var oldTotalBars = section.getNumberOfBars();
 
@@ -105,10 +105,10 @@ define([
 
 		var prevSection = this.songModel.getSection(sectionNumber - 1);
 		var currSection = this.songModel.getSection(sectionNumber);
-		
+
 		prevSection.setNumberOfBars(prevSection.getNumberOfBars() + currSection.getNumberOfBars());
 		this.songModel.removeSection(sectionNumber);
-		
+
 		UserLog.logAutoFade('info', "Section have been removed successfully");
 		$.publish('ToLayers-removeLayer');
 		$.publish('ToHistory-add', 'Remove Section');
@@ -141,7 +141,7 @@ define([
 		var sectionNumber = this.songModel.getSectionNumberFromBarNumber(selBars[0]);
 		this.songModel.getSection(sectionNumber).setRepeatTimes(repeatTimes);
 
-		$.publish('ToHistory-add', 'Change Section repeat' + repeatTimes);
+		$.publish('ToHistory-add', 'Change Section repeat ' + repeatTimes);
 
 	};
 
@@ -156,7 +156,7 @@ define([
 		//get the duration of the bar, and create a new bar with silences
 		var beatDuration = this.songModel.getTimeSignatureAt(numBar).getQuarterBeats();
 		var newBarNm = new NoteManager(); //Create new Bar NoteManager
-		
+
 		//insert those silences
 		newBarNm.fillGapWithRests(beatDuration);
 
@@ -265,7 +265,7 @@ define([
 		/**
 		 * modifies selBars end index, if there is a time signature change, selection is reduced until the bar before the time change,
 		 * this behaviour is copied from Sibelius
-		 * @return {Boolean} tells if we actually reduced selection or not, later we set Time Signature change to the previous only if we did not reduce. 
+		 * @return {Boolean} tells if we actually reduced selection or not, later we set Time Signature change to the previous only if we did not reduce.
 		 */
 		function reduceSelectionIfChanges() {
 			//if there are timeSig changes in selection we just take until change
@@ -273,7 +273,7 @@ define([
 			var timeSigChangesInSelection = false,
 				iBar,
 				prevTimeSignature;
-			barsIt.setBarIndex(selBars[0] + 1); //we check if there is a timeSig change in the middle (not in first bar) 
+			barsIt.setBarIndex(selBars[0] + 1); //we check if there is a timeSig change in the middle (not in first bar)
 			while (barsIt.getBarIndex() <= selBars[1]) {
 				iBar = barsIt.getBarIndex();
 
@@ -318,12 +318,12 @@ define([
 			noteMng = song.getComponent("notes"),
 			newTimeSig = new TimeSignatureModel(timeSignature);
 
-		//we check if there are time signature changes within the selection in that case selection is reduced until first change, selBars[1] is modified 
+		//we check if there are time signature changes within the selection in that case selection is reduced until first change, selBars[1] is modified
 		var timeSigChangesInSelection = reduceSelectionIfChanges();
 
 		//we get start and en beats of selection
 		var startBeat = song.getStartBeatFromBarNumber(selBars[0]);
-		
+
 		if (selBars[0] === 0 && selBars[1] === selBars[0]){
 			selBars[1] = barMng.getTotal() - 1;
 		}
@@ -364,7 +364,7 @@ define([
 				barMng.getBar(indexFollowingBar).setTimeSignatureChange(prevTimeSignature.toString());
 			}
 
-			//we set end index to -1 because notesSplice indexes are inclusive (so if we want to paste notes over indexes [0,5] we don't have to send 0,6 like in cloneElems). These differences among the code are confusing. TODO: refactor 
+			//we set end index to -1 because notesSplice indexes are inclusive (so if we want to paste notes over indexes [0,5] we don't have to send 0,6 like in cloneElems). These differences among the code are confusing. TODO: refactor
 			indexes[1]--;
 			//we overwrite adapted notes in general note manager
 			noteMng.notesSplice(indexes, adaptedNotes);
@@ -396,9 +396,9 @@ define([
 		if (isFirstBar) {
 			this.songModel.setTonality(tonality);
 		}else {
-			barMng.getBar(selBars[0]).setKeySignatureChange(tonality);	
+			barMng.getBar(selBars[0]).setKeySignatureChange(tonality);
 		}
-		
+
 		if (prevKeySignature){
 			barMng.getBar(selBars[lastIndex] + 1).setKeySignatureChange(prevKeySignature);
 		}
@@ -473,7 +473,7 @@ define([
 		}
 		return selectedBars;
 	};
-	
+
 
 	StructureEditionController.prototype.unfold = function(force) {
 		var unfold = true;
@@ -489,7 +489,7 @@ define([
 		}
 
 		$.publish('ToViewer-draw', [this.songModel, true]);
-		
+
 		this.structEditionModel.toggleUnfolded();
 		$.publish('ToLayers-removeLayer');
 	};
@@ -544,7 +544,7 @@ define([
 		}
 
 		noteMng.notesSplice([start, end -1], tmpNoteMng.getNotes());
-		
+
 		//if everything is selected we transpose key signature
 		var firstBar = this.songModel.getComponent('bars').getBar(0);
 		var firstBarKeySig = firstBar.getKeySignatureChange();
@@ -565,7 +565,7 @@ define([
 		for (i = 0, c = chordMng.getTotal(); i < c; i++) {
 			chord = chordMng.getChord(i);
 			if (chord.getNote()=="NC")	continue;
-			
+
 			pitchClass = new PitchClass(chord.getNote());
 			chord.setNote(pitchClass.transposeBy(interval, direction).toString());
 		}

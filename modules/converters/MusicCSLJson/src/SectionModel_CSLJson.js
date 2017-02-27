@@ -16,12 +16,10 @@ define(['modules/core/src/SectionModel'], function(SectionModel) {
 	SectionModel_CSLJson.exportToMusicCSLJSON = function(sectionModel) {
 		var sectionMusicCSLJSON = {};
 		sectionMusicCSLJSON.name = sectionModel.getName();
+		sectionMusicCSLJSON.repeat = sectionModel.getRepeatTimes();
 
 		if (sectionModel.getTimeSignature())
 			sectionMusicCSLJSON.timeSig = sectionModel.getTimeSignature().toString();
-
-		if (sectionModel.getRepeatTimes())
-			sectionMusicCSLJSON.repeat = sectionModel.getRepeatTimes();
 
 		if (sectionModel.getStyle())
 			sectionMusicCSLJSON.style = sectionModel.getStyle();
