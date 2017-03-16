@@ -27,7 +27,7 @@
   "private": false,
   "dependencies": {
     "bootstrap": "^3.3.6",
-    "jquery": "^2.2.3",
+    "jquery": "^3.2.0",
     "jspdf": "1.2.61",
     "mustache": "^2.2.1",
     "requirejs-text": "^2.0.12",
