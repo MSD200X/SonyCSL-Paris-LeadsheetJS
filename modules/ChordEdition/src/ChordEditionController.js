@@ -124,13 +124,6 @@ define([
 			}
 		}
 		var newFollowingChord = chordMng.getChordForBeat(this.songModel, endPasteBeat);
-		if (previousFollowingChord && !_.isEqual(previousFollowingChord, newFollowingChord)) {
-			// if previousFollowingChord was not removed by paste we need to clone it
-			var chordToAdd = new ChordModel(previousFollowingChord.serialize());
-			chordToAdd.setBeat(lastChordSpace.beatNumber);
-			chordToAdd.setBarNumber(lastChordSpace.barNumber);
-			chordMng.addChord(chordToAdd);
-		}
 		$.publish('ToHistory-add', ['Paste chords at bar ' + (firstChordSpace.barNumber + 1), false]);
 	};
 	
