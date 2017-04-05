@@ -204,7 +204,7 @@ define([
 			$.publish('ToMidiPlayer-enable');
 		});
 		$.subscribe('ToAudioPlayer-disable',function(){
-			$("input[name=typeSwitch][value=midi]").prop("checked",true);
+			$.publish('Audio-disabled');
 		});
 		$.subscribe('PlayerModel-toggleMetronome', function(el, isMetronome) {
 			if (isMetronome) {
