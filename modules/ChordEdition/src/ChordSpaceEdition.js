@@ -61,7 +61,7 @@ define([
 			width: 140,
 			triggerSelectOnValidInput: false,
 			showNoSuggestionNotice: true,
-			autoSelectFirst: true,
+			autoSelectFirst: false,
 			delimiter: "/",
 			minChars: 0,
 			lookupFilter: function(suggestion, originalQuery, queryLowerCase) {		
