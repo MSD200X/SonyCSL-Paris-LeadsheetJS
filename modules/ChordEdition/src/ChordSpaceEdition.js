@@ -47,7 +47,7 @@ define([
 	};
 	ChordSpaceEdition.prototype.createAutocomplete = function(chordSpaceView, input, songModel, list, inputVal) {
 		var self = this;
-		// input.select();
+
 		input.devbridgeAutocomplete({
 			lookup: list,
 			maxHeight: 200,
@@ -57,16 +57,22 @@ define([
 			showNoSuggestionNotice: true,
 			autoSelectFirst: true,
 			delimiter: "/",
+			minChars: 0,
+			lookupFilter: function(suggestion, originalQuery, queryLowerCase) {		
+ 				return suggestion.value.indexOf(originalQuery) !== -1;		
+ 			},
 			// You may need to modify that if at first it appears incorrectly, it's probably because ur element is not absolute position
 			// 'appendTo': myAbsolutedPositionElement, // dom or jquery (see devbridgeAutocomplete doc)
-			noSuggestionNotice: 'No Chord match',
+			noSuggestionNotice: 'Not a valid Chord',
 			onSelect: function() {
 				self.onChange(chordSpaceView, $(input).val());
-				//input.devbridgeAutocomplete('dispose');
+			},
+			onHide: function() {
+				self.onChange(chordSpaceView, $(input).val());
+				self.undrawEditableChord();
 			}
 		});
 
-		input.focus(); // this focus allow setting cursor on end carac
 		input.val(inputVal);
 		input.focus(); // this focus launch autocomplete directly when value is not empty
 		input.select(); // we select text so that is easier to edit
@@ -74,10 +80,8 @@ define([
 		// on tab call (tab doesn't trigger blur event)
 		input.keydown(function(e) {
 			var code = e.keyCode || e.which;
-			if (code == '9') {
-				//console.log('tab');
+			if (code === 9 || code === 13) {
 				self.onChange(chordSpaceView, $(this).val());
-				input.devbridgeAutocomplete('dispose');
 			}
 		});
 		// We use a filter function to make it easier for user to enter chords
