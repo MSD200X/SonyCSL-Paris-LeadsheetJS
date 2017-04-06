@@ -69,7 +69,7 @@ define([
 		$.subscribe('ChordSpaceView-updateChord', function(el, chordJson, chordModel, chordSpace) {
 			self.updateChord(chordJson, chordModel, chordSpace);
 			$.publish('ToViewer-draw', self.songModel);
-			self.chordSpaceEdition.undrawEditableChord();
+			// self.chordSpaceEdition.undrawEditableChord();
 		});
 		// cursor view subscribe
 		$.subscribe('Cursor-moveCursorByElement-chords', function(el, inc) {

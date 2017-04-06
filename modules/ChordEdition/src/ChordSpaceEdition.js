@@ -20,34 +20,40 @@ define([
 		this.undrawEditableChord();
 		var position = cursor.getPos();
 		position = position[0];
-		this.htmlInput = this.createHtmlInput(chordSpaceView);
+		this.chordSpaceView = chordSpaceView;
+		this.htmlInput = this.createHtmlInput();
 
 	};
 	ChordSpaceEdition.prototype.undrawEditableChord = function() {
 		if (this.htmlInput) {
 			this.htmlInput.input.devbridgeAutocomplete('dispose');
+			if (this.inputVal !== $(this.htmlInput.input).val()) {
+				this.onChange(this.chordSpaceView, $(this.htmlInput.input).val());
+			}
 			this.htmlInput.remove();
+			this.htmlInput = false;
+			this.chordSpaceView = false;
 		}
 	};
-	ChordSpaceEdition.prototype.createHtmlInput = function(chordSpaceView) {
+	ChordSpaceEdition.prototype.createHtmlInput = function() {
 		// Get chord value
-		var chord = chordSpaceView._getChordAtThisPosition(this.songModel);
-		var inputVal = chord ? chord.toString('', false) : '';
+		var chord = this.chordSpaceView._getChordAtThisPosition(this.songModel);
+		this.inputVal = chord ? chord.toString('', false) : '';
 
 		//we create html input, jquery object is in htmlInput.input (did not do getter because don't believe anymore in plain getters in javascript)
-		var htmlInput = new HtmlInputElement(this.viewer, 'chordSpaceInput', chordSpaceView.getArea(), this.marginTop, this.marginRight);
+		var htmlInput = new HtmlInputElement(this.viewer, 'chordSpaceInput', this.chordSpaceView.getArea(), this.marginTop, this.marginRight);
 
 		var input = htmlInput.input;
 		// We create auto complete input
 		var chordTypeList = (ChordUtils.allChords !== undefined) ? ChordUtils.allChords : ChordUtils.getAllChords();
 
-		this.createAutocomplete(chordSpaceView, input, this.songModel, chordTypeList, inputVal);
+		this.createAutocomplete(this.chordSpaceView, input, this.songModel, chordTypeList, this.inputVal);
 
 		return htmlInput;
 	};
 	ChordSpaceEdition.prototype.createAutocomplete = function(chordSpaceView, input, songModel, list, inputVal) {
 		var self = this;
-
+		self.chordSpaceView = chordSpaceView;
 		input.devbridgeAutocomplete({
 			lookup: list,
 			maxHeight: 200,
@@ -69,6 +75,7 @@ define([
 			},
 			onHide: function() {
 				self.onChange(chordSpaceView, $(input).val());
+				// self.onChange(chordSpaceView, $(input).val());
 				self.undrawEditableChord();
 			}
 		});
@@ -102,6 +109,7 @@ define([
 			UserLog.logAutoFade('error', 'Chord "' + newChordString + '" not well formated');
 		} else if (!noUpdateToEmptyChord && (removingChord || addingNewChord || !currentChord.equalsTo(chordJson))) {
 			//last condition refers to when we are modifying existing chord
+			console.log(chordJson, currentChord, chordSpaceView)
 			$.publish('ChordSpaceView-updateChord', [chordJson, currentChord, chordSpaceView]);
 		}
 	};
