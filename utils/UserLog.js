@@ -9,6 +9,8 @@ define(['jquery'], function($) {
 			warn: 'alert alert-warning',
 			error: 'alert alert-danger'
 		},
+		closeBtn: '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>',
+		defaultStyle: 'position:fixed; z-index:9999; width:100%;left:0;text-align:center;font-weight:bold;',
 		
 		/**
 		 * Call log function to send a message to user, message will automatically fadeOut quickly
@@ -23,10 +25,8 @@ define(['jquery'], function($) {
 			element = element || this.defaultElement;
 			speed = speed || this.defaultSpeed;
 			className = this.mapTypeClass[type];
-			var saveMsg = "<span class='" + className + "' style='position:fixed; z-index:9999; left:30%'>" + title + "</span>";
-			$(saveMsg).insertBefore(element).fadeOut(speed, function() {
-				$(this).remove();
-			});
+			var saveMsg = "<span class='" + className + " alert-dismissible' style='" + this.defaultStyle + "'>" + title + this.closeBtn + "</span>";
+			$(saveMsg).insertBefore(element).delay(speed).queue(function() { $(this).remove(); });
 		},
 		/**
 		 * Call log function to send a message to user, message will not be hidden unless you call remove
@@ -42,7 +42,7 @@ define(['jquery'], function($) {
 			element = element || this.defaultElement;
 			className = this.mapTypeClass[type];
 			var id = Math.round((Math.random() * 1000)) + '-' + Date.now();
-			var saveMsg = "<span class='" + className + "' id='"+ this.logPrefix +"-" + id + "' style='position:fixed; z-index:9999; left:35%'>" + title + "</span>";
+			var saveMsg = "<span class='" + className + " alert-dismissible' id='"+ this.logPrefix +"-" + id + "' style='" + this.defaultStyle + "'>" + title + this.closeBtn + "</span>";
 			$(saveMsg).insertBefore(element);
 			return id;
 		},
