@@ -3,7 +3,7 @@ A JavaScript library for online music leadsheets (visualizing, playing, editing 
 2015 Daniel Martín, Timotée Neullas and Vincent Degroote.
 Examples and documentation http://sonycsl-paris.github.io
 
-##Installation
+## Installation
 Inside the LeadsheetJS folder, you need to run [npm](http://blog.npmjs.org/post/85484771375/how-to-install-npm) to get all the dependencies:
 
     npm install --prod
